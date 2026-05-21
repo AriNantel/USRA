@@ -21,8 +21,11 @@ ocean_temp_v2_original = pl.read_excel(
 
 ocean_temp_clean = ocean_temp_original.with_columns(pl.all().cast(pl.Float64)).select(pl.col("age_ka_spline").alias("Age") * 1000, pl.col("MOT_spline").alias("Variation in ocean temp"))
 
+#For grimmer dataset
 co2_concentration_clean = co2_concentration_original.select(pl.col("Gasage (yr BP)").alias("Age"), "CO2 (ppmv)").filter(pl.col("Age").is_between(500,343500))
-#co2_concentration_clean = co2_concentration_original.select(pl.col("Gasage (yr BP)").alias("Age"), "CO2 (ppmv)").filter(pl.col("Age").is_between(500,699622))
+
+# For Epica Dome C 700 000 years dataset
+#co2_concentration_clean = co2_concentration_original.select(pl.col("Gasage (yr BP)").alias("Age"), "CO2 (ppmv)").filter(pl.col("Age").is_between(1001,699622))
 
 ocean_temp_v2_clean = ocean_temp_v2_original.select(pl.col("gas_age_ky").alias("Age") * 1000, "MOT_KrN2")
 
@@ -40,6 +43,7 @@ ax1.plot(
     label="Ocean temperature"
 )
 
+# For Epica Dome C 700 000 years ocean temp data set
 """# Left axis: ocean temperature
 ax1.plot(
     ocean_temp_v2_clean["Age"],
