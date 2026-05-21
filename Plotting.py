@@ -31,5 +31,20 @@ plt.ylabel('Sea Water temperature (C)')
 plt.title('Evolution of sea water temperature')
 plt.tight_layout()
 
+# Read Excel data using pandas
+data3 = pd.read_excel("EPICA Dome C 700 000 Year Noble Gas Data and Mean Ocean Temp reconstructions.xlsx", header=116)
+
+# Use bracket access for columns with spaces/parentheses
+x3 = data3['gas_age_ky']
+y3 = data3['MOT_KrN2']
+
+plt.figure(3)
+plt.plot(x3, y3)
+plt.grid(True)
+plt.xlabel('age (ka yr)')
+plt.ylabel('Reconstructed avergae ocean temperature (C)')
+plt.title('Evolution of sea water temperature')
+plt.tight_layout()
+
 plt.show()
 
