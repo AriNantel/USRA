@@ -81,7 +81,7 @@ def main():
         )
 
     ocean_temp_v2_original = pl.read_excel(
-        source = "EPICA Dome C 700 000 Year Noble Gas Data and Mean Ocean Temp reconstructions.xlsx", 
+        source = "edc2021noblegastemp.xlsx", 
         read_options={"header_row":116}
         )
     
@@ -145,9 +145,9 @@ def main():
         ocean_temp_v2_original
         .select(
             (pl.col("gas_age_ky")*1000).alias("Age"),
-            "MOT_KrN2")
+            pl.col("MOT_KrN2").alias("Variation in ocean temp"))
         .filter(
-            ~pl.any_horizontal(pl.all() == -999),
+            ~pl.any_horizontal(pl.all() == -999) &
             pl.col("Age").is_between(0, 10500))
     )
     
