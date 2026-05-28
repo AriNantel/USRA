@@ -67,6 +67,25 @@ def plot_graph(df, df_xaxis, df_yaxis, df_title):
     #plt.show()
     return fig
 
+def get_time_span(df, column_header):
+    first_year = df[column_header][0]
+    last_year = df[column_header][-1]
+    return first_year, last_year
+
+def median_timestep(df, column_header):
+    return df[column_header].diff().median()
+
+def mean_timestep(df, column_header):
+    return df[column_header].diff().mean()
+
+def max_gap(df, column_header):
+    
+    gaps = df[column_header].diff()
+    gap_index = gaps.arg_max()
+    gap_start = df[column_header][gap_index-1]
+    gap_end = df[column_header][gap_index]
+    return gap_start, gap_end, gaps[gap_index]
+
 def main():
     ocean_temp_original = pl.read_excel(
         source = "grimmer2024-mot-ohc-spline.xlsx", 
@@ -126,18 +145,20 @@ def main():
             (pl.col("age_ka_spline")*1000).alias("Age"),
             pl.col("MOT_spline").alias("Variation in ocean temp"))
         .filter(
-            ~pl.any_horizontal(pl.all() == -999) &
-            pl.col("Age").is_between(0, 10500))
+            ~pl.any_horizontal(pl.all() == -999)) 
+            #& pl.col("Age").is_between(0, 10500))
+        .sort("Age")
     )
 
     # Antartica 2015 co2 set
     co2_concentration_clean = (
         co2_concentration_original
         .select(
-            pl.col("Gasage (yr BP)").alias("Gas Age"),
+            pl.col("Gasage (yr BP)").alias("Age"),
             "CO2 (ppmv)")
-        .filter(
-            pl.col("Gas Age").is_between(350.168,798569))
+        #.filter(
+        #   pl.col("Gas Age").is_between(0,40000))
+        .sort("Age")
     )
 
     # EPICA DOM C Ocean temp dataset
@@ -147,30 +168,33 @@ def main():
             (pl.col("gas_age_ky")*1000).alias("Age"),
             pl.col("MOT_KrN2").alias("Variation in ocean temp"))
         .filter(
-            ~pl.any_horizontal(pl.all() == -999) &
-            pl.col("Age").is_between(0, 10500))
+            ~pl.any_horizontal(pl.all() == -999))
+            # & pl.col("Age").is_between(0, 10500))
+        .sort("Age")
     )
     
     # aicc2012 ice core dataset
     icecore_data_co2_composite_clean = (
         icecore_data_co2_composite_original
         .select(
-            pl.col("AICC2012 gas age (a B1950)").alias("Gas Age"),
+            pl.col("AICC2012 gas age (a B1950)").alias("Age"),
             "CO2 (ppmv)")
-        .filter(
-            pl.col("Gas Age").is_between(3168.82, 798569))
+        #.filter(
+        #    pl.col("Age").is_between(0, 40000))
+        .sort("Age")
     )
 
     # aicc2012 official dataset
     ice_accumulation_clean = (
         ice_accumulation_original
         .select(
-            pl.col("Ice age (a B1950)").alias("Ice Age"),
+            pl.col("Ice age (a B1950)").alias("Age"),
             pl.col("Gas age (a B1950)").alias("Gas Age"),
             pl.col("Accu. Rate (m ie)").alias("Accumulation Rate"))
         .filter(
-            pl.col("Ice Age").is_between(0,40000) & 
+            #pl.col("Ice Age").is_between(0,40000) & 
            ~pl.any_horizontal(pl.all() == -1))
+        .sort("Age")
     )
 
     # friedrich 2016 temp dataset
@@ -181,6 +205,7 @@ def main():
             pl.col("tempanom-pxy").alias("Anomalies from proxy data"))
         .filter(
             ~pl.any_horizontal(pl.all() == -999))
+        .sort("Age")
     )
 
     # Accum Rate EPICA C dataset
@@ -189,6 +214,7 @@ def main():
         .select(
             pl.col("age_yrBP1950").alias("Age"),
             pl.col("A_EDC").alias("Accumulation Rate"))
+        .sort("Age")
     )
 
     # pcmeltco_50yry dataset
@@ -197,6 +223,7 @@ def main():
         .select(
             (1950 - pl.col("Year")).alias("Age"),
             "Melt percentage")
+        .sort("Age")
     )
 
     # lisiecki 2005 dataset
@@ -205,8 +232,9 @@ def main():
         .select(
             (pl.col("age_calkaBP")*1000).alias("Age"),
             "d18O_benthic")
-        .filter(
-            pl.col("Age").is_between(3168.82, 798569))
+        #.filter(
+        #    pl.col("Age").is_between(3168.82, 798569))
+        .sort("Age")
     )
 
     #print(ocean_temp_clean.head())
@@ -216,11 +244,42 @@ def main():
     #print(ice_accumulation_clean.head())
     #print(air_temep_clean.head())
     #print(accumulation_EPICA_C_clean.head())
+    #print(melt_rate_clean.head())
     #print(d18o_clean.head())
 
-    #figure1 = plot_graph(icecore_data_co2_composite_clean, "Gas Age", "CO2 (ppmv)", "Gas age vs CO2 concentration")
-    #figure2 = plot_graph(ice_accumulation_clean, "Ice Age", "Accumulation Rate", "Ice Age vs Accumulation Rate for Vostok Ice core")
-    figure3 = two_yaxis_graph(melt_rate_clean, "Age", "Melt percentage", "melt percentage", ocean_temp_clean, "Age", "Variation in ocean temp", "Ocean Temp anomalies", "Comparing melt percentage to ocean temperature anomalies")
+    #figure1 = plot_graph(ocean_temp_clean, "Age", "Variation in ocean temp", "Evolution of the Ocean temperature anomalies compared to the age")
+    #figure2 = plot_graph(co2_concentration_clean, "Gas Age", "CO2 (ppmv)", "Evolution of CO2 concentration compared to the age of the gas")
+    #figure3 = plot_graph(ocean_temp_v2_clean, "Age", "Variation in ocean temp", "Evolution of the Ocean temperature anomalies compared to the age V2")
+    #figure4 = plot_graph(icecore_data_co2_composite_clean, "Gas Age", "CO2 (ppmv)","Evolution of CO2 concentration compared to the age of the gas V2")
+    #figure5 = plot_graph(ice_accumulation_clean, "Ice Age", "Accumulation Rate", "Evolution of the Acummulation of ice over time")
+    #figure6 = plot_graph(air_temp_clean, "Age", "Anomalies from proxy data", "Evolution of Air temperature over time")
+    #figure7 = plot_graph(accumulation_EPICA_C_clean, "Age", "Accumulation Rate", "Evolution of the Acummulation of ice over time V2")
+    #figure8 = plot_graph(melt_rate_clean, "Age", "Melt percentage", "Evolution of melt in the AGASSIZ ice sheet over time")
+    #figure9 = plot_graph(d18o_clean, "Age", "d18O_benthic", "Evolution of the rate of d18O in ocean sediments")
+    
+    #figure1 = two_yaxis_graph(co2_concentration_clean, "Gas Age", "CO2 (ppmv)", "CO2 Concentration", ice_accumulation_clean, "Gas Age", "Accumulation Rate", "Accumulation Rate", "CO2 Concentration (AICC2012 - not consistent) vs Ice accumulation (AICC2012) for EDC Ice Core")
+    #figure2 = two_yaxis_graph(co2_concentration_clean, "Gas Age", "CO2 (ppmv)", "CO2 Concentration", accumulation_EPICA_C_clean, "Age", "Accumulation Rate", "Accumulation Rate", "CO2 Concentration (AICC2012 - not consistent) vs Ice accumulation for EDC Ice Core (WD2014)")
+    #figure3 = two_yaxis_graph(icecore_data_co2_composite_clean, "Gas Age", "CO2 (ppmv)", "CO2 Concentration", ice_accumulation_clean, "Gas Age", "Accumulation Rate", "Accumulation Rate", "CO2 Concentration (AICC2012) vs Ice accumulation for EDC Ice Core (AICC2012)")
+    #figure4 = two_yaxis_graph(icecore_data_co2_composite_clean, "Gas Age", "CO2 (ppmv)", "CO2 Concentration", accumulation_EPICA_C_clean, "Age", "Accumulation Rate", "Accumulation Rate", "CO2 Concentration (AICC2012) vs Ice accumulation for EDC Ice Core (WD2014)")
+
+    datasets = {"ocean_temp_clean": ocean_temp_clean, "co2_concentration_clean":co2_concentration_clean, "ocean_temp_v2_clean":ocean_temp_v2_clean, "icecore_data_co2_composite_clean":icecore_data_co2_composite_clean, "ice_accumulation_clean":ice_accumulation_clean, "air_temp_clean":air_temp_clean, "accumulation_EPICA_C_clean":accumulation_EPICA_C_clean, "melt_rate_clean":melt_rate_clean,"d18o_clean":d18o_clean}
+
+    for i in datasets:
+        print(i)
+        print("")
+        start_year, end_year = get_time_span(datasets[i], "Age")
+        print("For", i, "the start year is:", start_year, "and the end year is:", end_year)
+
+        mean = mean_timestep(datasets[i], "Age")
+        print("The mean timestep for this dataset is:", mean)
+        
+        median = median_timestep(datasets[i], "Age")
+        print("The median timestep for this dataset is:", median)
+
+        gap_start, gap_end, gap = max_gap(datasets[i], "Age")
+        print("The max difference in year is:", gap, "It starts at year", gap_start, "and ends at year", gap_end)
+
+        print("")
 
     plt.show()
 
