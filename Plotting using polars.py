@@ -143,6 +143,12 @@ def main():
         skip_rows=41
     )
 
+    deep_ocean_temp_original = pl.read_csv(
+        source= "miller2024-sealevel.txt",
+        separator="\t",
+        comment_prefix="#"
+    )
+
     # Grimmer dataset
     ocean_temp_clean = (
         ocean_temp_original
@@ -162,8 +168,8 @@ def main():
         .select(
             pl.col("Gasage (yr BP)").alias("Age"),
             "CO2 (ppmv)")
-        #.filter(
-        #   pl.col("Gas Age").is_between(0,40000))
+        .filter(
+           pl.col("Age").is_between(0,400000))
         .sort("Age")
     )
 
@@ -238,8 +244,8 @@ def main():
         .select(
             (pl.col("age_calkaBP")*1000).alias("Age"),
             "d18O_benthic")
-        #.filter(
-        #    pl.col("Age").is_between(3168.82, 798569))
+        .filter(
+            pl.col("Age").is_between(0, 400000))
         .sort("Age")
     )
 
@@ -257,6 +263,14 @@ def main():
         .sort("Ice Age (AICC2023)")
     )
 
+    deep_ocean_temp_clean = (
+        deep_ocean_temp_original.select(
+            pl.col("Age") * 1000,
+            pl.col("pT_0 ").alias("Deep Ocen Temp"))
+            .filter(
+            pl.col("Age").is_between(0, 400000))
+        )
+
     #print(ocean_temp_clean.head())
     #print(co2_concentration_clean.head())
     #print(ocean_temp_v2_clean.head())
@@ -267,6 +281,7 @@ def main():
     #print(melt_rate_clean.head())
     #print(d18o_clean.head())
     #print(aicc2023_clean.head())
+    print(deep_ocean_temp_clean.head())
 
     #figure1 = plot_graph(ocean_temp_clean, "Age", "Variation in ocean temp", "Evolution of the Ocean temperature anomalies compared to the age")
     #figure2 = plot_graph(co2_concentration_clean, "Gas Age", "CO2 (ppmv)", "Evolution of CO2 concentration compared to the age of the gas")
@@ -284,26 +299,26 @@ def main():
     #figure4 = two_yaxis_graph(icecore_data_co2_composite_clean, "Gas Age", "CO2 (ppmv)", "CO2 Concentration", accumulation_EPICA_C_clean, "Age", "Accumulation Rate", "Accumulation Rate", "CO2 Concentration (AICC2012) vs Ice accumulation for EDC Ice Core (WD2014)")
 
     #datasets = {"ocean_temp_clean": ocean_temp_clean, "co2_concentration_clean":co2_concentration_clean, "ocean_temp_v2_clean":ocean_temp_v2_clean, "icecore_data_co2_composite_clean":icecore_data_co2_composite_clean, "ice_accumulation_clean":ice_accumulation_clean, "air_temp_clean":air_temp_clean, "accumulation_EPICA_C_clean":accumulation_EPICA_C_clean, "melt_rate_clean":melt_rate_clean,"d18o_clean":d18o_clean,"aicc2023_clean": aicc2023_clean}
+    datasets = {"d18o_clean":d18o_clean, "deep_ocean_temp" : deep_ocean_temp_clean, "co2_concentration_clean":co2_concentration_clean, }
 
-"""
     for i in datasets:
         print(i)
         print("")
-        start_year, end_year = get_time_span(datasets[i], "Ice Age (AICC2023)")
+        start_year, end_year = get_time_span(datasets[i], "Age")
         print("For", i, "the start year is:", start_year, "and the end year is:", end_year)
 
-        mean = mean_timestep(datasets[i], "Ice Age (AICC2023)")
+        mean = mean_timestep(datasets[i], "Age")
         print("The mean timestep for this dataset is:", mean)
         
-        median = median_timestep(datasets[i], "Ice Age (AICC2023)")
+        median = median_timestep(datasets[i], "Age")
         print("The median timestep for this dataset is:", median)
 
-        gap_start, gap_end, gap = max_gap(datasets[i], "Ice Age (AICC2023)")
+        gap_start, gap_end, gap = max_gap(datasets[i], "Age")
         print("The max difference in year is:", gap, "It starts at year", gap_start, "and ends at year", gap_end)
 
         print("")
 
     plt.show()
-    """
+
 
 main()
