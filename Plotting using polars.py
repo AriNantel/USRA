@@ -53,6 +53,29 @@ def two_yaxis_graph(df1, df1_xaxis, df1_yaxis, df1_label, df2, df2_xaxis, df2_ya
     #plt.show()
     return fig
 
+def two_line_graph(df1, x1, y1, label1, df2, x2, y2, label2, title):
+    fig, ax = plt.subplots(figsize=(10,6))
+
+    ax.plot(
+        df1[x1],
+        df1[y1],
+        label=label1
+    )
+
+    ax.plot(
+        df2[x2],
+        df2[y2],
+        label=label2
+    )
+
+    ax.set_xlabel(x1)
+    ax.set_ylabel("Ice Volume")
+    ax.set_title(title)
+
+    ax.legend()
+
+    return fig
+
 def plot_graph(df, df_xaxis, df_yaxis, df_title):
     fig, ax = plt.subplots()
     ax.plot(
@@ -149,6 +172,20 @@ def main():
         comment_prefix="#"
     )
 
+    ice_volume_original = pl.read_csv(
+        source= "bintanja2008-noaa.txt",
+        separator="\t",
+        comment_prefix="#"
+    )
+
+    global_ice_volume_original = pl.read_csv(
+        source="rohling2021-wh-main.txt",
+        separator="\t",
+        comment_prefix="#",
+        null_values="NA",
+        infer_schema_length=100000
+    )
+
     # Grimmer dataset
     ocean_temp_clean = (
         ocean_temp_original
@@ -180,8 +217,8 @@ def main():
             (pl.col("gas_age_ky")*1000).alias("Age"),
             pl.col("MOT_KrN2").alias("Variation in ocean temp"))
         .filter(
-            ~pl.any_horizontal(pl.all() == -999))
-            # & pl.col("Age").is_between(0, 10500))
+            ~pl.any_horizontal(pl.all() == -999)
+            & pl.col("Age").is_between(0, 400000))
         .sort("Age")
     )
     
@@ -266,9 +303,28 @@ def main():
     deep_ocean_temp_clean = (
         deep_ocean_temp_original.select(
             pl.col("Age") * 1000,
-            pl.col("pT_0 ").alias("Deep Ocen Temp"))
+            pl.col("pT_0 ").alias("Deep Ocean Temp"))
             .filter(
             pl.col("Age").is_between(0, 400000))
+        )
+
+    ice_volume_clean = (
+        ice_volume_original.select(
+            (pl.col("age_calkaBP") * 1000).alias("Age"),
+            pl.col("Ice_nam").alias("Ice_Volume_NA"),
+            pl.col("Ice_eas").alias("Ice_Volume_euro"))
+            .filter(
+            pl.col("Age").is_between(0, 400000))
+        )
+
+    global_ice_volume_clean = (
+        global_ice_volume_original
+        .select(
+            (pl.col("t(ka)") * -1000).alias("Age"),
+            pl.col("V_NH+SH").alias("Ice_Volume"))
+        .filter(
+            pl.col("Age").is_between(0, 400000))
+        .sort("Age")
         )
 
     #print(ocean_temp_clean.head())
@@ -281,7 +337,8 @@ def main():
     #print(melt_rate_clean.head())
     #print(d18o_clean.head())
     #print(aicc2023_clean.head())
-    print(deep_ocean_temp_clean.head())
+    #print(deep_ocean_temp_clean.head())
+    print(global_ice_volume_clean.head())
 
     #figure1 = plot_graph(ocean_temp_clean, "Age", "Variation in ocean temp", "Evolution of the Ocean temperature anomalies compared to the age")
     #figure2 = plot_graph(co2_concentration_clean, "Gas Age", "CO2 (ppmv)", "Evolution of CO2 concentration compared to the age of the gas")
@@ -292,15 +349,16 @@ def main():
     #figure7 = plot_graph(accumulation_EPICA_C_clean, "Age", "Accumulation Rate", "Evolution of the Acummulation of ice over time V2")
     #figure8 = plot_graph(melt_rate_clean, "Age", "Melt percentage", "Evolution of melt in the AGASSIZ ice sheet over time")
     #figure9 = plot_graph(d18o_clean, "Age", "d18O_benthic", "Evolution of the rate of d18O in ocean sediments")
+    #figure9 = plot_graph(deep_ocean_temp_clean, "Age", "Deep Ocean Temp", "test")
     
-    #figure1 = two_yaxis_graph(co2_concentration_clean, "Gas Age", "CO2 (ppmv)", "CO2 Concentration", ice_accumulation_clean, "Gas Age", "Accumulation Rate", "Accumulation Rate", "CO2 Concentration (AICC2012 - not consistent) vs Ice accumulation (AICC2012) for EDC Ice Core")
+    #figure1 = two_line_graph(ice_volume_clean, "Age", "Ice_Volume_NA", "North America", ice_volume_clean, "Age", "Ice_Volume_euro", "euroasia", "Difference in Ice volume for north american ice sheet and euroasia ice sheet")
     #figure2 = two_yaxis_graph(co2_concentration_clean, "Gas Age", "CO2 (ppmv)", "CO2 Concentration", accumulation_EPICA_C_clean, "Age", "Accumulation Rate", "Accumulation Rate", "CO2 Concentration (AICC2012 - not consistent) vs Ice accumulation for EDC Ice Core (WD2014)")
     #figure3 = two_yaxis_graph(icecore_data_co2_composite_clean, "Gas Age", "CO2 (ppmv)", "CO2 Concentration", ice_accumulation_clean, "Gas Age", "Accumulation Rate", "Accumulation Rate", "CO2 Concentration (AICC2012) vs Ice accumulation for EDC Ice Core (AICC2012)")
     #figure4 = two_yaxis_graph(icecore_data_co2_composite_clean, "Gas Age", "CO2 (ppmv)", "CO2 Concentration", accumulation_EPICA_C_clean, "Age", "Accumulation Rate", "Accumulation Rate", "CO2 Concentration (AICC2012) vs Ice accumulation for EDC Ice Core (WD2014)")
 
     #datasets = {"ocean_temp_clean": ocean_temp_clean, "co2_concentration_clean":co2_concentration_clean, "ocean_temp_v2_clean":ocean_temp_v2_clean, "icecore_data_co2_composite_clean":icecore_data_co2_composite_clean, "ice_accumulation_clean":ice_accumulation_clean, "air_temp_clean":air_temp_clean, "accumulation_EPICA_C_clean":accumulation_EPICA_C_clean, "melt_rate_clean":melt_rate_clean,"d18o_clean":d18o_clean,"aicc2023_clean": aicc2023_clean}
-    datasets = {"d18o_clean":d18o_clean, "deep_ocean_temp" : deep_ocean_temp_clean, "co2_concentration_clean":co2_concentration_clean, }
-
+    datasets = {"ocean_temp" : ocean_temp_v2_clean, "co2_concentration_clean":co2_concentration_clean, "Ice_volume":global_ice_volume_clean}
+    
     for i in datasets:
         print(i)
         print("")
@@ -317,7 +375,7 @@ def main():
         print("The max difference in year is:", gap, "It starts at year", gap_start, "and ends at year", gap_end)
 
         print("")
-
+    
     plt.show()
 
 
