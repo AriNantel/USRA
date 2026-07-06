@@ -186,6 +186,20 @@ def main():
         infer_schema_length=100000
     )
 
+    ocean_150_original = pl.read_excel(
+        source="sosdian2009.xls",
+        sheet_name="607 MgCa BWT",
+        read_options={"header_row":5}
+    )
+
+    ocean_10_original = pl.read_excel(
+        source="sosdian2009.xls",
+        sheet_name="23-24 MgCa BWT",
+        read_options={"header_row":5}
+    )
+
+    ocean_original = pl.concat([ocean_10_original, ocean_150_original], how="vertical")
+
     # Grimmer dataset
     ocean_temp_clean = (
         ocean_temp_original
@@ -214,11 +228,11 @@ def main():
     ocean_temp_v2_clean = (
         ocean_temp_v2_original
         .select(
-            (pl.col("gas_age_ky")*1000).alias("Age"),
+            (pl.col("gas_age_ky")).alias("Age"),
             pl.col("MOT_KrN2").alias("Variation in ocean temp"))
         .filter(
             ~pl.any_horizontal(pl.all() == -999)
-            & pl.col("Age").is_between(0, 400000))
+            & pl.col("Age").is_between(0, 400))
         .sort("Age")
     )
     
@@ -327,6 +341,16 @@ def main():
         .sort("Age")
         )
 
+    ocean_clean = (
+        ocean_original
+        .select(
+            pl.col("Age (ka)").alias("Age"),
+            pl.col(" BWT (°C)").alias("Water Temp"))
+        .filter(
+            pl.col("Age").is_between(0, 400))
+        .sort("Age")
+        )
+
     #print(ocean_temp_clean.head())
     #print(co2_concentration_clean.head())
     #print(ocean_temp_v2_clean.head())
@@ -338,7 +362,7 @@ def main():
     #print(d18o_clean.head())
     #print(aicc2023_clean.head())
     #print(deep_ocean_temp_clean.head())
-    print(global_ice_volume_clean.head())
+    #print(global_ice_volume_clean.head())
 
     #figure1 = plot_graph(ocean_temp_clean, "Age", "Variation in ocean temp", "Evolution of the Ocean temperature anomalies compared to the age")
     #figure2 = plot_graph(co2_concentration_clean, "Gas Age", "CO2 (ppmv)", "Evolution of CO2 concentration compared to the age of the gas")
@@ -357,9 +381,9 @@ def main():
     #figure4 = two_yaxis_graph(icecore_data_co2_composite_clean, "Gas Age", "CO2 (ppmv)", "CO2 Concentration", accumulation_EPICA_C_clean, "Age", "Accumulation Rate", "Accumulation Rate", "CO2 Concentration (AICC2012) vs Ice accumulation for EDC Ice Core (WD2014)")
 
     #datasets = {"ocean_temp_clean": ocean_temp_clean, "co2_concentration_clean":co2_concentration_clean, "ocean_temp_v2_clean":ocean_temp_v2_clean, "icecore_data_co2_composite_clean":icecore_data_co2_composite_clean, "ice_accumulation_clean":ice_accumulation_clean, "air_temp_clean":air_temp_clean, "accumulation_EPICA_C_clean":accumulation_EPICA_C_clean, "melt_rate_clean":melt_rate_clean,"d18o_clean":d18o_clean,"aicc2023_clean": aicc2023_clean}
-    datasets = {"ocean_temp" : ocean_temp_v2_clean, "co2_concentration_clean":co2_concentration_clean, "Ice_volume":global_ice_volume_clean}
+    #datasets = {"ocean_temp" : ocean_temp_v2_clean, "co2_concentration_clean":co2_concentration_clean, "Ice_volume":global_ice_volume_clean}
     
-    for i in datasets:
+    """for i in datasets:
         print(i)
         print("")
         start_year, end_year = get_time_span(datasets[i], "Age")
@@ -374,8 +398,9 @@ def main():
         gap_start, gap_end, gap = max_gap(datasets[i], "Age")
         print("The max difference in year is:", gap, "It starts at year", gap_start, "and ends at year", gap_end)
 
-        print("")
+        print("")"""
     
+
     plt.show()
 
 
