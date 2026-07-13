@@ -191,7 +191,7 @@ def normalize_data(xs, col1, col2, col3):
     """
 
     # normalize the data. For each column take a value substract the minimum value in the column and divide it by the biggest difference in the column. Once normalized, keep only the normalized columns
-    """xs_norm = (
+    xs_norm = (
         xs.with_columns(
             ((pl.col(col1) - pl.col(col1).min()) /
             (pl.col(col1).max() - pl.col(col1).min())
@@ -206,9 +206,9 @@ def normalize_data(xs, col1, col2, col3):
             ).alias("temp_norm")
         )
         .select("ice_norm", "co2_norm", "temp_norm")
-    )"""
+    )
 
-    xs_norm = (
+    """xs_norm = (
         xs.with_columns(
             ((pl.col(col1) - pl.col(col1).min()) /
             (pl.col(col1).max() - pl.col(col1).min())
@@ -219,7 +219,7 @@ def normalize_data(xs, col1, col2, col3):
             ).alias("co2_norm")
         )
         .select("ice_norm", "co2_norm")
-    )
+    )"""
 
     # Return the normalized data
     return xs_norm
@@ -753,13 +753,14 @@ def normal_sindy(xs, lam, alpha, timescale,  library = ps.PolynomialLibrary(degr
     """
         
     # Define an optimizer to use
-    opt = ps.STLSQ(threshold = lam, alpha = alpha)
+    #opt = ps.STLSQ(threshold = lam, alpha = alpha)
+    opt = ps.TrappingSR3(_n_tgts=3)
     
     # Define the SINDy model
     model = ps.SINDy(feature_library=library, optimizer=opt)
 
     # Fit the data to the model
-    model.fit(xs, t=timescale, feature_names=["x", "y", "z"], u=u)
+    model.fit(xs, t=timescale, feature_names=["x", "y", "z"])
     
     # Print the model (prints the recovered equtions)
     model.print()
@@ -793,6 +794,7 @@ def weak_sindy(xs, lam, alpha, timescale, library = ps.PolynomialLibrary(degree=
     # Define an optimizer to use
     opt = ps.STLSQ(threshold=lam, alpha=alpha)
     #opt = ps.SR3(reg_weight_lam=0.1, regularizer="L1", relax_coeff_nu=0.01,max_iter=100 )
+    
 
     # Define the SINDy model
     model = ps.SINDy(feature_library=ode_library, optimizer=opt)
@@ -946,7 +948,7 @@ def main():
     
     # Define a common timescale for the datasets going from 0 to 400 ka
     dt = 0.01
-    common_timescale = np.arange(0, 401, dt)
+    common_timescale = np.arange(0, 400, dt)
     
     # Interpolate the data to a common timsecale
     #co2_inter = interpolate(common_timescale, co2, "Age", "CO2")
@@ -955,7 +957,7 @@ def main():
 
     ice_vol_smooth = smoothing_spline(common_timescale, ice_vol, "Age", "Ice_Volume",50000)
     co2_smooth = smoothing_spline(common_timescale, co2, "Age", "CO2",100000)
-    deep_temp_smooth = smoothing_spline(common_timescale, temp, "Age", "Ocean Temp",0)
+    deep_temp_smooth = smoothing_spline(common_timescale, temp, "Age", "Ocean Temp",50000)
 
 
     # Combine the data into one dataframe
@@ -968,8 +970,13 @@ def main():
     # Get a datafram with only the ice extent and CO2 concentration data
     #xs_norm_ice_co2 = xs_norm.select("x_norm", "y_norm")
 
+    xs_test = pl.DataFrame({"co2": xs_norm.select("co2_norm"), "co2_half": xs_norm.select("co2_norm") * 0.5})
+    xs_test = xs_test.to_numpy()
+
+    
+
     # Convert the dataframe to a numpy array to ensure compatibility with sindy librart
-    #xs_norm = xs_norm.to_numpy()
+    xs_norm = xs_norm.to_numpy()
     #xs_norm_ice_co2 = xs_norm_ice_co2.to_numpy()
 
     # Generating synthethic data
@@ -977,9 +984,6 @@ def main():
     #data, timescale = generate_data()
 
     #milank = milankovich_forcing(-common_timescale*1000)
-
-    xs_test = pl.DataFrame({"co2": xs_norm.select("co2_norm"), "co2_half": xs_norm.select("co2_norm") * 0.5})
-    xs_test = xs_test.to_numpy()
 
     #print(xs_test.shape)
     #print(xs_test[:5])
@@ -998,10 +1002,12 @@ def main():
     common_timescale = common_timescale[::-1]
     timescale = np.arange(0, len(xs_test)) * dt
 
-    print("weak sindy")
+    #print("weak sindy")
     #weak_sindy(xs_norm_ice_co2, lam=0.1, alpha=0.05, timescale=common_timescale)
     #weak_sindy(xs_test_norm, lam=0, alpha=0, timescale=common_timescale)
-    weak_sindy(xs_test, lam=0.01, alpha=0, timescale=timescale)
+    #weak_sindy(xs_test, lam=0.01, alpha=0, timescale=timescale)
+
+    #normal_sindy(xs_norm, lam = 0.01, alpha = 0, timescale = timescale, library = ps.PolynomialLibrary(degree=2, include_bias=False))
 
     #print("constrained SINDy")
     #prior_knowledge_sindy(xs_norm, lam=0.04, alpha=1, timescale=timescale)
@@ -1022,9 +1028,15 @@ def main():
 
     #fig = plot_forward_in_time_dataset(xs_norm_ice_co2, dt, xs_norm_ice_co2[0,:], common_timescale, "Recovered SINDy ODE vs real dataset, lam = 0.01, alpha = 1.5, library = degree 3")
 
+    print(common_timescale[:5])
+    print(common_timescale[-5:])
+    
+    print(xs_norm[:5])
+    print(xs_norm[0,:])
+
     #fig = plot_forward_in_time_dataset(xs_norm, dt, xs_norm[0,:], common_timescale)
 
-    fig = plot_forward_in_time_dataset(xs_test, common_timescale)
+    #fig = plot_forward_in_time_dataset(xs_test, common_timescale)
 
     #fig = plot_forward_in_time_noisy_data(data)
 
