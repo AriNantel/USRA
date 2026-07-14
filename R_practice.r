@@ -2,6 +2,7 @@ library(readxl)
 library(deSolve)
 library(sindyr)
 library(pracma)
+library(palinsol)
 
 ocean_10_original <- read_excel(
   "sosdian2009.xls",
@@ -67,10 +68,27 @@ smooth_co2 <- predict(smooth_co2_fit, common_timsecale)$y
 smooth_ocean_temp_fit <- smooth.spline(ocean_temp_clean$Age,  ocean_temp_clean$Ocean_Temp)
 smooth_ocean_temp <- predict(smooth_ocean_temp_fit, common_timsecale)$y
 
+solar_radiation <- function(common_timsecale){
+
+  orbital_time = -common_timsecale * 1000
+
+  latitude <- 65 * pi/180 # (radians)
+
+  insolation <- function(times, astrosol=ber78,...)
+  sapply(times, function(tt) Insol(orbit=astrosol(tt), lon = pi/2, lat = latitude))
+
+  # Daily mean incoming solar radiation at TOA (W/m2) 
+  isl <- insolation(orbital_time, ber78)
+  return(isl)
+}
+
+isl = solar_radiation(common_timsecale = common_timsecale)
+
 xs <- data.frame(
   x = smooth_ice,
   y = smooth_co2,
-  z = smooth_ocean_temp
+  z = smooth_ocean_temp,
+  isl = isl
 )
 
 # Get rid of NA values
@@ -95,29 +113,6 @@ xs_normalized <- as.data.frame(lapply(xs, normalized))
 x <- xs_normalized$ice
 y <- xs_normalized$co2
 z <- xs_normalized$temp
-
-theta <- cbind(
-  "(Intercept)" = 1,
-  x = x,
-  y = y,
-  z = z,
-  "x:x" = x^2,
-  "x:y" = x * y,
-  "x:z" = x * z,
-  "y:y" = y^2,
-  "y:z" = y * z,
-  "z:z" = z^2,
-  "x:x:x" = x^3,
-  "x:x:y" = x^2 * y,
-  "x:x:z" = x^2 * z,
-  "x:y:y" = y^2 * x,
-  "x:y:z" = x * y * z,
-  "x:z:z" = z^2 * x,
-  "y:y:y" = y^3,
-  "y:y:z" = y^2 * z,
-  "y:z:z" = z^2 * y,
-  "z:z:z" = z^3
-)
 
 # Define parameters (change these to explore different behavior)
 #p <- 1
@@ -171,4 +166,3 @@ theta <- cbind(
 # Using SINDyr library
 sindy.obj = sindy(xs = xs_normalized, dt = 0.01, lambda = 0.25)
 print(sindy.obj$B)
-
