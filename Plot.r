@@ -10,6 +10,7 @@ q <- 2.5
 r <- 1.3
 s <- 0.6
 v <- 0.2
+u <- 0.5
 
 # Define the system of ODEs according to barry saltzman equations
 saltzman_system <- function(t, state, parameters) {
@@ -28,10 +29,10 @@ saltzman_system <- function(t, state, parameters) {
 initial_conditions <- as.numeric(xs_normalized[1, ])
 
 # Time span
-
-dt <- 0.01
+#dt <- 1
 #times <- seq(0, 30, by = dt)
-times <- common_timsecale
+#times <- common_timsecale
+#times <- seq(0, 500, by = dt)
 
 
 # Solve ODEs for each initial condition
@@ -77,6 +78,20 @@ system <- function(t, state, parameters) {
   list(c(dx, dy, dz))
 }
 
+get_equations <- function() {
+
+  # Equations for dataset data
+  #dx_equation <- "dx = -0.3408959*x - 0.6553861*y + 0.5914701*z + 0.9908404*x^2 + 1.2947956*x*y - 1.4918978*x*z + 1.6883207*y^2 - 1.1672142*y*z - 0.6813752*x^3 - 0.7988121*x^2*y + 0.8126251*x^2*z - 1.6405513*x*y^2 + 1.8816830*x*y*z - 0.8566249*y^3 + 0.3341154*y^2*z"
+  #dy_equation <- "dy = -0.3710603 + 1.1563477*x + 1.0282703*y - 0.9894505*x^2 - 1.8122942*x*y - 0.5600973*y^2 - 1.0615566*y*z + 0.4749107*z^2 + 0.7124899*x^2*y + 0.4846215*x^2*z + 0.4238264*x*y^2 + 0.8508179*x*y*z - 0.8996630*x*z^2 + 0.6048002*y^2*z"
+  #dz_equation <- "dz = -0.5859008 + 1.6880933*x - 0.5573774*y + 1.7447657*z - 1.4640817*x^2 + 0.9334177*x*y - 3.3018644*x*z + 1.8605015*y^2 - 1.5307828*y*z - 0.8136639*z^2 + 0.3576680*x^3 - 0.5424893*x^2*y + 1.4410937*x^2*z - 1.4551431*x*y^2 + 1.3245459*x*y*z + 0.9100749*x*z^2 - 0.8440160*y^3 + 0.6907300*y*z^2"
+
+  dx_equation <- "-0.9743054*x - 0.9905567*y - 0.1695750*z - 0.6530760*u"
+  dy_equation <-  "1.3918707*y - 0.9470937*z - 0.5413422*y**3"
+  dz_equation <- "-2.626116*x - 2.489054*z"
+
+  c(dx_equation, dy_equation, dz_equation)
+}
+
 # Solve ODEs for each initial condition
 solutions <- ode(
   y = initial_conditions,
@@ -86,7 +101,7 @@ solutions <- ode(
   method = "lsoda"
 )
 
-df.b <- data.frame(solutions)
+df.b <- data.frame(solutions_generated_data)
 colnames(df.b) <- c("time", "x", "y", "z")
 
 plot_combined_result <- function(common_timsecale, xs_normalized, recovered_equations, title = "SINDy ODE extraction from datasets"){
@@ -142,7 +157,7 @@ plot_combined_result <- function(common_timsecale, xs_normalized, recovered_equa
   )
 }
 
-plot_stacked_result <- function(common_timsecale, xs_normalized, recovered_equations, title = NULL){
+plot_stacked_result <- function(common_timsecale, xs_normalized, recovered_equations, recovered_data, title = NULL){
 
   par(mfrow = c(2, 2))
 
@@ -150,20 +165,20 @@ plot_stacked_result <- function(common_timsecale, xs_normalized, recovered_equat
     x = common_timsecale,
     y = xs_normalized$x,
     type = "l",
-    ylim = c(-2, 2),
+    ylim = c(-2.5, 2.5),
     ylab = "(-)",
     xlab = "Time (10 ky)",
-    xlim = c(11, 400),
+    xlim = c(0, 500),
     main = "SINDy ODE extraction from datasets for ice extent"
   )
 
   lines(x = common_timsecale,
-        recovered_equations$x,
+        recovered_data$x,
         col = "orange",
-        lty = 3, lwd = 4)
+        lty = 2, lwd = 2)
 
   legend(
-    "topright",
+    "top",
     c("Ice Data", "Recovered"),
     col = c("black", "orange"),
     lty = c(1, 3),
@@ -171,25 +186,33 @@ plot_stacked_result <- function(common_timsecale, xs_normalized, recovered_equat
     bty = "n"
   )
 
+  legend(
+    "bottom",
+    legend = recovered_equations[1],
+    bty = "n",
+    cex = 0.6
+  )
+
+
   plot(
     x = common_timsecale,
     y = xs_normalized$y,
     col = "red",
     type = "l",
-    ylim = c(-2, 2),
+    ylim = c(-2.5, 2.5),
     ylab = "(-)",
     xlab = "Time (10 ky)",
-    xlim = c(11, 400),
+    xlim = c(0, 500),
     main = "SINDy ODE extraction from datasets for CO2 concentration"
   )
 
   lines(x = common_timsecale,
-        recovered_equations$y,
+        recovered_data$y,
         col = "orange",
-        lty = 3, lwd = 4)
+        lty = 2, lwd = 2)
 
   legend(
-    "topright",
+    "top",
     c("CO2 Dataset", "Recovered"),
     col = c("red", "orange"),
     lty = c(1, 3),
@@ -197,29 +220,43 @@ plot_stacked_result <- function(common_timsecale, xs_normalized, recovered_equat
     bty = "n"
   )
 
+  legend(
+    "bottom",
+    legend = recovered_equations[2],
+    bty = "n",
+    cex = 0.6
+  )
+
   plot(
     x = common_timsecale,
     y = xs_normalized$z,
     col = "blue",
     type = "l",
-    ylim = c(-2, 2),
+    ylim = c(-2.5, 2.5),
     ylab = "(-)",
     xlab = "Time (10 ky)",
-    xlim = c(11, 400),
+    xlim = c(0, 500),
     main = "SINDy ODE extraction from datasets for Ocean temperature"
   )
   lines(x = common_timsecale,
-        recovered_equations$z,
+        recovered_data$z,
         col = "orange",
-        lty = 3, lwd = 4)
+        lty = 2, lwd = 2)
 
   legend(
-    "topright",
-    c("Dataset", "Recovered"),
+    "top",
+    c("Ocean Temp Dataset", "Recovered"),
     col = c("blue", "orange"),
     lty = c(1, 3),
     lwd = c(1, 4),
     bty = "n"
+  )
+
+  legend(
+    "bottom",
+    legend = recovered_equations[3],
+    bty = "n",
+    cex = 0.6
   )
 
   abline(h = 0, lty = 2)
@@ -254,12 +291,107 @@ plot_scatter <- function(raw_x, raw_y, smooth_y, timescale, y_label, title = NUL
   invisible(NULL)
 }
 
+plot_milank <- function(common_timsecale, generated_data, external_focring, title = NULL){
+
+  par(mfrow = c(2, 2))
+
+  plot(
+    x = common_timsecale,
+    y = generated_data$x,
+    type = "l",
+    ylim = c(-1.5, 1.5),
+    ylab = "(-)",
+    xlab = "Time (ky)",
+    xlim = c(500, 0),
+    main = "Ice Extent (X)"
+  )
+
+  legend(
+    "top",
+    c("Ice Data"),
+    col = c("black"),
+    lty = c(1),
+    lwd = c(1),
+    bty = "n"
+  )
+
+  plot(
+    x = common_timsecale,
+    y = generated_data$y,
+    col = "red",
+    type = "l",
+    ylim = c(-1.5, 1.5),
+    ylab = "(-)",
+    xlab = "Time (ky)",
+    xlim = c(500, 0),
+    main = "CO2 concentration (Y)"
+  )
+
+  legend(
+    "top",
+    c("CO2 Dataset"),
+    col = c("red"),
+    lty = c(1),
+    lwd = c(1),
+    bty = "n"
+  )
+
+  plot(
+    x = common_timsecale,
+    y = generated_data$z,
+    col = "blue",
+    type = "l",
+    ylim = c(-1.5, 1.5),
+    ylab = "(-)",
+    xlab = "Time (ky)",
+    xlim = c(500,0),
+    main = "Ocean temp (Z)"
+  )
+
+  legend(
+    "top",
+    c("Ocean Temp Dataset"),
+    col = c("blue"),
+    lty = c(1),
+    lwd = c(1),
+    bty = "n"
+  )
+
+  plot(
+    x = common_timsecale,
+    y = external_focring,
+    col = c("orange"),
+    type = "l",
+    ylim = c(-1.5, 1.5),
+    ylab = "(-)",
+    xlab = "Time (ky)",
+    xlim = c(500, 0),
+    main = " External forcing factor (M)"
+  )
+
+  legend(
+    "top",
+    c("Insolation"),
+    col = c("orange"),
+    lty = c(1),
+    lwd = c(1),
+    bty = "n"
+  )
+
+  abline(h = 0, lty = 2)
+
+  par(mfrow = c(1, 1))
+}
 
 
 #plot_scatter(ice_volume_clean$Age, ice_volume_clean$Ice_Volume, smooth_ice, common_timsecale, "ice_volume", "Raw Ice data vs smoothed curve")
 #plot_scatter(co2_clean$Age, co2_clean$CO2, smooth_co2, common_timsecale, "co2", "Raw co2 data vs smoothed curve")
 #plot_scatter(ocean_temp_clean$Age, ocean_temp_clean$Ocean_Temp, smooth_ocean_temp, common_timsecale, "Ocean Temp", "Raw ocean temp data vs smoothed curve")
 
-plot_stacked_result(common_timsecale = common_timsecale, xs_normalized = xs_normalized, recovered_equations = df.b)
+
+plot_stacked_result(common_timsecale = times, xs_normalized = xs_gen_normalized, recovered_data = df.b, recovered_equations = get_equations())
+
+
+#plot_milank(common_timsecale = times, generated_data = xs_gen_normalized, external_focring = isl_normalized)
 
 print("i finishied running")
