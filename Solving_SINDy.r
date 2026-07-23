@@ -115,7 +115,7 @@ solar_radiation <- function(common_timescale) {
   # Daily mean incoming solar radiation at TOA (W/m2)
   isl <- insolation(orbital_time, ber78)
   #print(head(isl))
-  #print(head(orbital_time))
+  print(head(orbital_time))
   isl_df <- data.frame(age=orbital_time, isl=isl)
   return(isl_df)
 }
@@ -195,9 +195,17 @@ colnames(xs_generated) <- c("x", "y", "z")
 
 xs_gen_normalized <- as.data.frame(lapply(xs_generated, normalized))
 
+xs_plus_forcing <- cbind(xs_normalized,isl_normalized)
+names(xs_plus_forcing) <- c("x", "y", "z", "u")
+
+#Theta = features(xs_plus_forcing, polyorder = 2)
+
 # Using SINDyr library
-sindy.obj = sindyc(xs = xs_normalized, u = isl_normalized, dt = dt, lambda = 0.02)
+sindy.obj = sindyc(xs = xs_normalized, u = isl_normalized, dt = dt, lambda = 0.015)
 print(sindy.obj$B)
+
+#test = sindyc(xs = xs_normalized, dt = dt, lambda = 0.0)
+#print(test$B)
 
 #result <- sindyc(xs_gen_normalized, u = isl_normalized, dt = 0.1, lambda = 0.1)
 #print(result$B)
