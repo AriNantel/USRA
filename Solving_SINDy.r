@@ -5,6 +5,8 @@ library(pracma)
 library(palinsol)
 
 clean_data <- function() {
+
+  # Deep ocean temp
   ocean_10_original <- read_excel(
     "sosdian2009.xls",
     sheet = "23-24 MgCa BWT",
@@ -56,7 +58,53 @@ clean_data <- function() {
   co2_clean <- co2_clean[co2_clean$Age >= 0 & co2_clean$Age <= 400, ]
   co2_clean <- co2_clean[order(co2_clean$Age, decreasing = TRUE),]
 
+  # Mean ocean temp
+
+  mean_ocean_original <- read_excel(
+    "edc2021noblegastemp.xlsx", 
+    skip = 116    
+  )
+
+  mean_ocean_clean <- mean_ocean_original[, c("gas_age_ky", "MOT_KrN2")]
+  names(mean_ocean_clean) <- c("Age", "Ocean_Temp")
+  mean_ocean_clean <- mean_ocean_clean[mean_ocean_clean$Age >= 0 & mean_ocean_clean$Age <= 400, ]
+  mean_ocean_clean <- mean_ocean_clean[order(mean_ocean_clean$Age, decreasing = TRUE),]
+
+  # Sea surface temp
+
+  SST_original <- read.csv(
+    "herbert2016-odp982.txt",
+    header = TRUE,
+    sep = "\t",
+    comment.char = "#"
+  )
+
+  SST_clean <- SST_original[, c("age_kaBP", "SST_anom.M")]
+  names(SST_clean) <- c("Age", "Ocean_Temp")
+  # the dataset sets 0 as 1850 not 1950
+  SST_clean$Age <- SST_clean$Age + 0.1
+  SST_clean <- SST_clean[SST_clean$Age >= 0 & SST_clean$Age <= 400, ]
+  #SST_clean <- SST_clean[order(SST_clean$Age, decreasing = TRUE),]
+
+  deep_ocean_lisick_original <- read.csv(
+    "rohling2021-lr-main.txt",
+    header = TRUE,
+    sep = "\t",
+    comment.char = "#"
+  )
+
+  deep_ocean_lisick_clean <- deep_ocean_lisick_original[, c("t.ka.", "Tw")]
+  names(deep_ocean_lisick_clean) <- c("Age", "Ocean_Temp")
+  deep_ocean_lisick_clean$Age <- deep_ocean_lisick_clean$Age * -1
+  deep_ocean_lisick_clean <- deep_ocean_lisick_clean[order(deep_ocean_lisick_clean$Age), ]
+  deep_ocean_lisick_clean <- deep_ocean_lisick_clean[deep_ocean_lisick_clean$Age >= 0 & deep_ocean_lisick_clean$Age <= 400, ]
+  deep_ocean_lisick_clean <- deep_ocean_lisick_clean[order(deep_ocean_lisick_clean$Age, decreasing = TRUE),]
+
+
   return(list(ice_volume_clean, co2_clean, ocean_temp_clean))
+  #return(list(ice_volume_clean, co2_clean, mean_ocean_clean))
+  #return(list(ice_volume_clean,co2_clean,SST_clean))
+  #return(list(ice_volume_clean,co2_clean,deep_ocean_lisick_clean))
 }
 
 datasets <- clean_data()
@@ -74,7 +122,8 @@ t_star <- seq(0, 50, by = 0.1)
 times <- t_star * 10
 
 # Here we defien a common_timescale for the datasets
-common_timescale <- seq(400, 11, by = -dt)
+#common_timescale <- seq(400, 11, by = -dt)
+common_timescale <- seq(11, 400, dt)
 model_time <- seq(from = 0, by = dt, length.out = nrow(xs_normalized))
 
 # Create data on the same timescale for Ice extent, Co2 concenntration and deep ocean temp
@@ -115,7 +164,7 @@ solar_radiation <- function(common_timescale) {
   # Daily mean incoming solar radiation at TOA (W/m2)
   isl <- insolation(orbital_time, ber78)
   #print(head(isl))
-  print(head(orbital_time))
+  #print(head(orbital_time))
   isl_df <- data.frame(age=orbital_time, isl=isl)
   return(isl_df)
 }
@@ -144,6 +193,8 @@ xs <- data.frame(
 xs <- na.omit(xs)
 
 xs_normalized <- as.data.frame(lapply(xs, normalized))
+
+xs_normalized_2d <- xs_normalized[,c("x","y")]
 
 # print(nrow(xs_normalized))
 # print(head(xs_normalized))
@@ -176,7 +227,8 @@ generate_system_Milank <- function(t, state, parameters) {
 # initial_conditions <- c(0.6, -0.8, -0.2)
 
 # Inital conditions for dataset data, we use the first row of the datasets
-initial_conditions <- as.numeric(xs_normalized[1,])
+initial_conditions_3D <- as.numeric(xs_normalized[1,])
+initial_conditions_2D <- initial_conditions_3D[1:2]
 
 # Solve ODEs for each initial condition for the generated data
 solutions_generated_data <- ode(
