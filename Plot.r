@@ -12,6 +12,10 @@ s <- 0.6
 v <- 0.2
 u <- 0.5
 
+dt <- 0.01
+common_timescale <- seq(400, 11, by = -dt)
+model_time <- seq(from = 0, by = dt, length.out = length(common_timescale))
+
 # Define the system of ODEs according to barry saltzman equations
 # saltzman_system <- function(t, state, parameters) {
 #   x <- state[1]
@@ -35,8 +39,8 @@ u <- 0.5
 # )
 
 # Plot
-df.a <- data.frame(saltzman_solutions)
-colnames(df.a) <- c("time", "x", "y", "z")
+#df.a <- data.frame(saltzman_solutions)
+#colnames(df.a) <- c("time", "x", "y", "z")
 
 
 # Define the system of ODEs for a 3D system
@@ -336,7 +340,25 @@ system_4D <- function(t, state, parameters) {
   list(c(dx, dy, dz, dw))
 }
 
-get_equations <- function() {
+system_5D <- function(t, state, parameters) {
+  x <- state[1]
+  y <- state[2]
+  z <- state[3]
+  w <- state[4]
+  v <- state[5]
+
+  u <- parameters$R_interp(t)
+
+  dx <- -0.0419224161472729 - 0.0631848049760304*x - 0.120912135360045*y + 0.11986783109097*z - 0.0610493365257155*w - 0.0987233299464439*u - 0.0524202853284099*x*x - 0.337363957537757*x*y - 0.0314473915340663*x*z + 0.241002366055123*x*w + 0.240870377797923*x*v - 0.114746090857571*x*u - 0.169535160712813*y*y + 0.0982697464932246*y*z - 0.153676035373548*y*w + 0.127049289347272*y*v - 0.014645300241152*y*u - 0.173014463378624*z*w - 0.0310932580061676*z*v + 0.0705365858734628*z*u + 0.34614305229277*w*w + 0.112663558396966*w*v - 0.137422385516913*w*u + 0.0901098926744978*v*v - 0.0262051914591408*u*u + 0.0102742220675101*x*x*x + 0.156748570177136*x*x*y - 0.0152465356779505*x*x*z - 0.296470976709504*x*x*w - 0.0265341467767836*x*x*v + 0.174818930514833*x*y*y + 0.28820799750809*x*y*z - 0.407365564323496*x*y*w - 0.0840494965804687*x*y*v - 0.0706778137943835*x*y*u + 0.100151900694761*x*z*z - 0.371513515534767*x*z*w + 0.0294490294555659*x*z*v - 0.0258401619442663*x*z*u + 0.186418532112297*x*w*v - 0.0572654457892882*x*w*u - 0.096586931879152*x*v*u - 0.0280451612747697*x*u*u + 0.276175112695881*y*y*y - 0.0821449417489735*y*y*z - 0.590356974932931*y*y*w - 0.147266880192538*y*y*u - 0.188578920565278*y*z*z + 0.511769468229995*y*z*w + 0.0963899490234195*y*z*v + 0.0754988767165181*y*z*u + 0.222069946102969*y*w*w - 0.0278122214278681*y*w*v + 0.0218523855893303*y*w*u - 0.04828379659285*y*v*v - 0.0597284297206759*y*v*u - 0.0402645446970796*y*u*u - 0.0241517459173952*z*z*z + 0.349372450017453*z*z*w - 0.0520339431350801*z*z*v + 0.0611287349158078*z*z*u - 0.538859308014393*z*w*w - 0.113553099390438*z*w*v - 0.181813192221372*z*w*u - 0.12190769878325*z*v*v - 0.0428646850172821*z*v*u - 0.0226655166527102*z*u*u + 0.199603290184709*w*w*v + 0.0632740915489993*w*w*u + 0.247650578704619*w*v*v + 0.0887913043277705*w*v*u + 0.0216077548966917*v*v*v - 0.0433896238857682*v*u*u
+  dy <- -0.0880468682491695 + 0.0516171293069625*x - 0.201795358769175*y - 0.0725281676786863*z + 0.323771595471487*w - 0.0166771218955888*v + 0.0337382034660182*u - 0.0263605737465713*x*x - 0.066149237080207*x*v + 0.12008722708191*x*u - 0.103978357532372*y*y - 0.0244105665483737*y*z + 0.208996494427333*y*w - 0.201910032386374*y*v + 0.0772344879217477*y*u + 0.0393108896768663*z*z - 0.164186342132288*z*w + 0.0168874163385382*z*v + 0.0564672227625846*z*u + 0.0603664220796066*w*w + 0.167815354646929*w*v - 0.0425972358275042*w*u + 0.0542764807853901*v*v + 0.0500468466728892*u*u + 0.060042027004865*x*x*z - 0.0551695636258499*x*x*w - 0.176664944294211*x*x*v - 0.0683806488707721*x*x*u - 0.127324577580095*x*y*y - 0.152146895827518*x*y*z + 0.281654685015333*x*y*w - 0.164643170955805*x*y*v - 0.0521097177257803*x*y*u + 0.06949611223581*x*z*z + 0.258875623257866*x*z*w - 0.277378319081443*x*w*w - 0.0458309058209064*x*w*v + 0.129842639740021*x*v*v + 0.0811199381679308*x*v*u - 0.0178295821185492*x*u*u - 0.209992291169814*y*y*w - 0.0754457324114142*y*y*v + 0.0796507533322795*y*y*u + 0.0802298873865645*y*z*z - 0.354934984534891*y*z*w + 0.0633649509273084*y*z*v - 0.0221408181542045*y*z*u + 0.471824422643794*y*w*w + 0.0268679000558791*y*w*v - 0.196321977592037*y*w*u + 0.205281177257986*y*v*v + 0.113252936643544*y*v*u + 0.0594746805958498*y*u*u + 0.0289475074847684*z*z*z - 0.0797807616516235*z*z*w + 0.0734849739652735*z*z*v + 0.457601869434576*z*w*w - 0.366146241361545*z*w*v + 0.0295419432116272*z*w*u - 0.04005119071183*z*v*v + 0.111316638022763*z*v*u + 0.0188362519206634*z*u*u - 0.38974580075237*w*w*w + 0.166314695592013*w*w*v + 0.110424741976612*w*w*u - 0.0382783171949561*w*v*v - 0.250147624345143*w*v*u - 0.0531525581451515*w*u*u - 0.0267918223702719*v*v*u + 0.0520328857255097*v*u*u + 0.014874078578059*u*u*u
+  dz <- -0.0356948139939924 + 0.133867023568423*x + 0.0952182271861714*y + 0.0801422219458208*z - 0.0420421354952254*w - 0.169476815672062*v - 0.0163478927549669*u + 0.0174314220534193*x*x + 0.359324839783367*x*y + 0.0561744879833217*x*z - 0.50506846826312*x*w - 0.296302770712926*x*v + 0.0341965777805214*x*u - 0.0457955646501215*y*y - 0.0405826031516061*y*z + 0.389917961161696*y*w - 0.0731308638241723*y*v + 0.036908197396911*y*u + 0.118749081567372*z*z + 0.0126365402025937*z*w - 0.137856344728715*z*v - 0.477250626993174*w*w - 0.118297237863441*w*v + 0.03243296801875*w*u + 0.0641063248932793*v*v - 0.230332050211548*v*u + 0.0239265491218003*u*u + 0.133951434526176*x*x*y - 0.0102610921291435*x*x*z - 0.0630399987357552*x*x*u - 0.230687463749026*x*y*y + 0.0792211325996866*x*y*z + 0.512813049234647*x*y*w - 0.181272754477069*x*y*v - 0.0167947731518664*x*y*u - 0.0244721755120792*x*z*z - 0.160714652665472*x*z*w + 0.0523579156053549*x*z*u - 0.0574626352713058*x*w*w + 0.0330884719416446*x*w*v - 0.083762300008065*x*w*u + 0.0141040544794336*x*v*v + 0.0409416329590622*x*v*u + 0.0357819771249138*x*u*u + 0.13348395416294*y*y*y - 0.46597114487561*y*y*w + 0.0878814760561439*y*y*v - 0.0357333974637285*y*y*u - 0.0838363423801422*y*z*z + 0.157726904913116*y*z*w + 0.107410365630589*y*z*v - 0.0553568702933023*y*z*u + 0.432779598411335*y*w*w - 0.359726561602032*y*w*v + 0.119643789289424*y*w*u - 0.0210328460168217*y*v*v - 0.0771956180967291*z*z*z + 0.0630363289122344*z*z*w + 0.23980795938794*z*z*v - 0.0448223082970371*z*z*u - 0.288202390869611*z*w*w - 0.237915466956907*z*w*v + 0.145279932032815*z*w*u + 0.161719614449116*z*v*v - 0.0811556386667739*z*v*u + 0.0591608590795945*w*w*w + 0.235691158993487*w*w*v - 0.194611660584332*w*w*u - 0.102284085446371*w*v*v + 0.133434537735653*w*v*u + 0.0533378937968297*w*u*u - 0.0348701444871991*v*v*v + 0.232980004763214*v*v*u + 0.0134588588532619*v*u*u
+  dw <- -0.0538279626981529 + 0.115181411158373*x - 0.0374060660386857*y + 0.0853890025400053*w - 0.13243398673306*v + 0.0685991672815617*u + 0.0760946327390615*x*y - 0.0761957227698766*x*z - 0.124612810610057*x*v + 0.0249982666716252*x*u + 0.0578034483258851*y*y - 0.0694819884406752*y*z - 0.034579585647264*y*w - 0.129840316672826*y*v + 0.0634037991891129*y*u - 0.0182687843295186*z*z + 0.117795676887992*z*v + 0.0588911015114204*w*w - 0.0720761390647686*w*v - 0.0296858560741666*w*u + 0.0203418837217424*v*v + 0.044103538632811*u*u + 0.0233894580863475*x*x*x + 0.0341611959386082*x*x*y + 0.058729170712944*x*x*z + 0.0142380517608296*x*x*w - 0.034023872844513*x*x*v - 0.063332741971566*x*x*u - 0.0317559517930069*x*y*w - 0.0978854091424475*x*y*v + 0.119275793873164*x*y*u - 0.0500655080598985*x*z*z + 0.241163412656317*x*z*w + 0.0354114336424794*x*z*u - 0.0981733510775839*x*w*w - 0.0651485025297435*x*w*v - 0.134224415071961*x*w*u + 0.029110164746646*x*v*v + 0.0374881180116318*x*v*u - 0.128611091303132*y*y*y + 0.361506911527442*y*y*w + 0.0325978512936815*y*y*v + 0.0721679006117844*y*y*u - 0.0272337149277597*y*z*z - 0.0381298705579218*y*z*v - 0.0113641345922983*y*z*u - 0.405717163491051*y*w*w - 0.144075885322356*y*w*v + 0.0641609270853455*y*v*v - 0.0409277248248015*y*v*u + 0.045851140872812*y*u*u + 0.0372522285146938*z*z*z - 0.0861207863843217*z*z*w + 0.245860345707106*z*w*w + 0.0580341995625536*z*w*u - 0.0487683397695574*z*v*v - 0.0910408244122429*z*v*u + 0.0188655626653537*w*w*w + 0.0852749641541617*w*w*v - 0.0641511004424374*w*w*u + 0.0689503336678444*w*v*v + 0.0117346828613752*w*v*u - 0.0310757367963989*w*u*u + 0.0358226231593877*v*v*v + 0.032809201469618*v*u*u
+  dv <- 0.0100394056372792*v  
+
+  list(c(dx, dy, dz, dw, dv))
+}
+
+get_equations_str <- function() {
 
   # Equations for dataset data
   #dx_equation <- "dx = -0.3408959*x - 0.6553861*y + 0.5914701*z + 0.9908404*x^2 + 1.2947956*x*y - 1.4918978*x*z + 1.6883207*y^2 - 1.1672142*y*z - 0.6813752*x^3 - 0.7988121*x^2*y + 0.8126251*x^2*z - 1.6405513*x*y^2 + 1.8816830*x*y*z - 0.8566249*y^3 + 0.3341154*y^2*z"
@@ -409,12 +431,23 @@ parms <- list(R_interp = R_interp)
 #   maxsteps = 50000
 # )
 
-solutions_4D <- ode(
+# solutions_4D <- ode(
+#   y = initial_conditions_4D,
+#   # use t_star for generated data
+#   #times = t_star,
+#   times = model_time,
+#   func = system_4D,
+#   parms = parms,
+#   method = "lsoda",
+#   maxsteps = 50000
+# )
+
+solutions_5D <- ode(
   y = initial_conditions,
   # use t_star for generated data
   #times = t_star,
   times = model_time,
-  func = system_4D,
+  func = system_5D,
   parms = parms,
   method = "lsoda",
   maxsteps = 50000
@@ -424,18 +457,21 @@ solutions_4D <- ode(
 #df.b <- data.frame(solutions_2D)
 #colnames(df.b) <- c("time", "x", "y")
 
-recovered_3D <-data.frame(solutions_3D)
-colnames(recovered_3D) <- c("time", "x", "y", "z")
+#recovered_3D <-data.frame(solutions_3D)
+#colnames(recovered_3D) <- c("time", "x", "y", "z")
 
-recovered_4D <- data.frame(solutions_4D)
-colnames(recovered_4D) <- c("time", "x", "y", "z", "w")
+#recovered_4D <- data.frame(solutions_4D)
+#colnames(recovered_4D) <- c("time", "x", "y", "z", "w")
+
+recovered_5D <- data.frame(solutions_5D)
+colnames(recovered_5D) <- c("time", "x", "y", "z", "w", "v")
 
 #df.c <- data.frame(solutions_generated_data)
 #colnames(df.c) <- c("time", "x", "y", "z")
 
-plot_combined_result <- function(common_timsecale, xs_normalized, recovered_equations, title = "SINDy ODE extraction from datasets"){
+plot_combined_result <- function(common_timescale, xs_normalized, recovered_equations, title = "SINDy ODE extraction from datasets"){
   plot(
-    x = common_timsecale,
+    x = common_timescale,
     y = xs_normalized$x,
     type = "l",
     ylim = c(-2, 2),
@@ -445,15 +481,15 @@ plot_combined_result <- function(common_timsecale, xs_normalized, recovered_equa
     main = title
   )
 
-  lines(x = common_timsecale,
+  lines(x = common_timescale,
         recovered_equations$x,
         col = "orange",
         lty = 3, lwd = 4)
-  lines(x = common_timsecale,
+  lines(x = common_timescale,
         recovered_equations$y,
         col = "orange",
         lty = 3, lwd = 4)
-  lines(x = common_timsecale,
+  lines(x = common_timescale,
         recovered_equations$z,
         col = "orange",
         lty = 3, lwd = 4)
@@ -462,9 +498,9 @@ plot_combined_result <- function(common_timsecale, xs_normalized, recovered_equa
   #lines(x = df.a$time, df.a$y, col = "red")
   #lines(x = df.a$time, df.a$z, col = "blue")
 
-  lines(x = common_timsecale, xs_normalized$x, col = "black")
-  lines(x = common_timsecale, xs_normalized$y, col = "red")
-  lines(x = common_timsecale, xs_normalized$z, col = "blue")
+  lines(x = common_timescale, xs_normalized$x, col = "black")
+  lines(x = common_timescale, xs_normalized$y, col = "red")
+  lines(x = common_timescale, xs_normalized$z, col = "blue")
 
 
   abline(h = 0, lty = 2)
@@ -486,23 +522,23 @@ plot_combined_result <- function(common_timsecale, xs_normalized, recovered_equa
   )
 }
 
-plot_stacked_result_4D <- function(common_timsecale, xs_normalized, recovered_equations, recovered_data, external_forcing, title = NULL){
+plot_stacked_result_5D <- function(common_timescale, xs_normalized, recovered_equations, recovered_data, external_forcing, title = NULL){
 
   par(mfrow = c(3, 2))
 
   plot(
-    x = common_timsecale,
+    x = common_timescale,
     y = xs_normalized$x,
     type = "l",
     #ylim = range(recovered_data$x),
     ylim = c(-2.5, 2.5),
     ylab = "(-)",
     xlab = "Time (ky)",
-    xlim = range(common_timsecale),
+    xlim = range(common_timescale),
     main = "Ice Extent (X)"
   )
 
-  lines(x = common_timsecale,
+  lines(x = common_timescale,
         recovered_data$x,
         col = "orange",
         lty = 2, lwd = 2)
@@ -526,7 +562,7 @@ plot_stacked_result_4D <- function(common_timsecale, xs_normalized, recovered_eq
   abline(h = 0, lty = 2)
 
   plot(
-    x = common_timsecale,
+    x = common_timescale,
     y = xs_normalized$y,
     col = "red",
     type = "l",
@@ -534,11 +570,11 @@ plot_stacked_result_4D <- function(common_timsecale, xs_normalized, recovered_eq
     ylim = c(-2.5, 2.5),
     ylab = "(-)",
     xlab = "Time (ky)",
-    xlim = range(common_timsecale),
+    xlim = range(common_timescale),
     main = "CO2 Concentration (Y)"
   )
 
-  lines(x = common_timsecale,
+  lines(x = common_timescale,
         recovered_data$y,
         col = "orange",
         lty = 2, lwd = 2)
@@ -562,7 +598,7 @@ plot_stacked_result_4D <- function(common_timsecale, xs_normalized, recovered_eq
   abline(h = 0, lty = 2)
 
   plot(
-    x = common_timsecale,
+    x = common_timescale,
     y = xs_normalized$z,
     col = "blue",
     type = "l",
@@ -570,10 +606,10 @@ plot_stacked_result_4D <- function(common_timsecale, xs_normalized, recovered_eq
     ylim = c(-2.5, 2.5),
     ylab = "(-)",
     xlab = "Time (ky)",
-    xlim = range(common_timsecale),
+    xlim = range(common_timescale),
     main = "Ocean Temperature (Z)"
   )
-  lines(x = common_timsecale,
+  lines(x = common_timescale,
         recovered_data$z,
         col = "orange",
         lty = 2, lwd = 2)
@@ -597,18 +633,224 @@ plot_stacked_result_4D <- function(common_timsecale, xs_normalized, recovered_eq
   abline(h = 0, lty = 2)
 
   plot(
-    x = common_timsecale,
+    x = common_timescale,
     y = xs_normalized$w,
     type = "l",
     #ylim = range(recovered_data$w),
     ylim = c(-2.5, 2.5),
     ylab = "(-)",
     xlab = "Time (ky)",
-    xlim = range(common_timsecale),
+    xlim = range(common_timescale),
+    main = "GAST"
+  )
+
+  lines(x = common_timescale,
+        recovered_data$w,
+        col = "orange",
+        lty = 2, lwd = 2)
+
+  legend(
+    "top",
+    c("GAST", "Recovered"),
+    col = c("black", "orange"),
+    lty = c(1, 3),
+    lwd = c(1, 4),
+    bty = "n"
+  )
+
+  legend(
+    "bottom",
+    legend = recovered_equations[4],
+    bty = "n",
+    cex = 0.6
+  )
+
+  abline(h = 0, lty = 2)
+
+    plot(
+    x = common_timescale,
+    y = xs_normalized$v,
+    type = "l",
+    #ylim = range(recovered_data$v),
+    ylim = c(-2.5, 2.5),
+    ylab = "(-)",
+    xlab = "Time (ky)",
+    xlim = range(common_timescale),
+    main = "Arctic surface temp"
+  )
+
+  lines(x = common_timescale,
+        recovered_data$v,
+        col = "orange",
+        lty = 2, lwd = 2)
+
+  legend(
+    "top",
+    c("Arctic Surface temp", "Recovered"),
+    col = c("black", "orange"),
+    lty = c(1, 3),
+    lwd = c(1, 4),
+    bty = "n"
+  )
+
+  legend(
+    "bottom",
+    legend = recovered_equations[5],
+    bty = "n",
+    cex = 0.6
+  )
+
+  abline(h = 0, lty = 2)
+
+  plot(
+    x = common_timescale,
+    y = external_forcing,
+    col = c("orange"),
+    type = "l",
+    ylim = c(-2.5, 2.5),
+    ylab = "(-)",
+    xlab = "Time (ky)",
+    xlim = range(common_timescale),
+    main = " External forcing factor (M)"
+  )
+
+  legend(
+    "top",
+    c("Insolation"),
+    col = c("orange"),
+    lty = c(1),
+    lwd = c(1),
+    bty = "n"
+  )
+
+  abline(h = 0, lty = 2)
+
+  par(mfrow = c(1, 1))
+}
+
+plot_stacked_result_4D <- function(common_timescale, xs_normalized, recovered_equations, recovered_data, external_forcing, title = NULL){
+
+  par(mfrow = c(3, 2))
+
+  plot(
+    x = common_timescale,
+    y = xs_normalized$x,
+    type = "l",
+    #ylim = range(recovered_data$x),
+    ylim = c(-2.5, 2.5),
+    ylab = "(-)",
+    xlab = "Time (ky)",
+    xlim = range(common_timescale),
+    main = "Ice Extent (X)"
+  )
+
+  lines(x = common_timescale,
+        recovered_data$x,
+        col = "orange",
+        lty = 2, lwd = 2)
+
+  legend(
+    "top",
+    c("Ice Data", "Recovered"),
+    col = c("black", "orange"),
+    lty = c(1, 3),
+    lwd = c(1, 4),
+    bty = "n"
+  )
+
+  legend(
+    "bottom",
+    legend = recovered_equations[1],
+    bty = "n",
+    cex = 0.6
+  )
+
+  abline(h = 0, lty = 2)
+
+  plot(
+    x = common_timescale,
+    y = xs_normalized$y,
+    col = "red",
+    type = "l",
+    #ylim = range(recovered_data$y),
+    ylim = c(-2.5, 2.5),
+    ylab = "(-)",
+    xlab = "Time (ky)",
+    xlim = range(common_timescale),
+    main = "CO2 Concentration (Y)"
+  )
+
+  lines(x = common_timescale,
+        recovered_data$y,
+        col = "orange",
+        lty = 2, lwd = 2)
+
+  legend(
+    "top",
+    c("CO2 Dataset", "Recovered"),
+    col = c("red", "orange"),
+    lty = c(1, 3),
+    lwd = c(1, 4),
+    bty = "n"
+  )
+
+  legend(
+    "bottom",
+    legend = recovered_equations[2],
+    bty = "n",
+    cex = 0.6
+  )
+
+  abline(h = 0, lty = 2)
+
+  plot(
+    x = common_timescale,
+    y = xs_normalized$z,
+    col = "blue",
+    type = "l",
+    #ylim = range(recovered_data$z),
+    ylim = c(-2.5, 2.5),
+    ylab = "(-)",
+    xlab = "Time (ky)",
+    xlim = range(common_timescale),
+    main = "Ocean Temperature (Z)"
+  )
+  lines(x = common_timescale,
+        recovered_data$z,
+        col = "orange",
+        lty = 2, lwd = 2)
+
+  legend(
+    "top",
+    c("Ocean Temp Dataset", "Recovered"),
+    col = c("blue", "orange"),
+    lty = c(1, 3),
+    lwd = c(1, 4),
+    bty = "n"
+  )
+
+  legend(
+    "bottom",
+    legend = recovered_equations[3],
+    bty = "n",
+    cex = 0.6
+  )
+
+  abline(h = 0, lty = 2)
+
+  plot(
+    x = common_timescale,
+    y = xs_normalized$w,
+    type = "l",
+    #ylim = range(recovered_data$w),
+    ylim = c(-2.5, 2.5),
+    ylab = "(-)",
+    xlab = "Time (ky)",
+    xlim = range(common_timescale),
     main = "SST (W)"
   )
 
-  lines(x = common_timsecale,
+  lines(x = common_timescale,
         recovered_data$w,
         col = "orange",
         lty = 2, lwd = 2)
@@ -630,14 +872,14 @@ plot_stacked_result_4D <- function(common_timsecale, xs_normalized, recovered_eq
   )
 
   plot(
-    x = common_timsecale,
+    x = common_timescale,
     y = external_forcing,
     col = c("orange"),
     type = "l",
     ylim = c(-2.5, 2.5),
     ylab = "(-)",
     xlab = "Time (ky)",
-    xlim = range(common_timsecale),
+    xlim = range(common_timescale),
     main = " External forcing factor (M)"
   )
 
@@ -655,23 +897,23 @@ plot_stacked_result_4D <- function(common_timsecale, xs_normalized, recovered_eq
   par(mfrow = c(1, 1))
 }
 
-plot_stacked_result_3D <- function(common_timsecale, xs_normalized, recovered_equations, recovered_data, external_forcing, title = NULL){
+plot_stacked_result_3D <- function(common_timescale, xs_normalized, recovered_equations, recovered_data, external_forcing, title = NULL){
 
   par(mfrow = c(2, 2))
 
   plot(
-    x = common_timsecale,
+    x = common_timescale,
     y = xs_normalized$x,
     type = "l",
     ylim = range(recovered_data$x),
     #ylim = c(-2.5, 2.5),
     ylab = "(-)",
     xlab = "Time (ky)",
-    xlim = range(common_timsecale),
+    xlim = range(common_timescale),
     main = "Ice Extent (X)"
   )
 
-  lines(x = common_timsecale,
+  lines(x = common_timescale,
         recovered_data$x,
         col = "orange",
         lty = 2, lwd = 2)
@@ -695,7 +937,7 @@ plot_stacked_result_3D <- function(common_timsecale, xs_normalized, recovered_eq
   abline(h = 0, lty = 2)
 
   plot(
-    x = common_timsecale,
+    x = common_timescale,
     y = xs_normalized$y,
     col = "red",
     type = "l",
@@ -703,11 +945,11 @@ plot_stacked_result_3D <- function(common_timsecale, xs_normalized, recovered_eq
     #ylim = c(-2.5, 2.5),
     ylab = "(-)",
     xlab = "Time (ky)",
-    xlim = range(common_timsecale),
+    xlim = range(common_timescale),
     main = "CO2 Concentration (Y)"
   )
 
-  lines(x = common_timsecale,
+  lines(x = common_timescale,
         recovered_data$y,
         col = "orange",
         lty = 2, lwd = 2)
@@ -731,7 +973,7 @@ plot_stacked_result_3D <- function(common_timsecale, xs_normalized, recovered_eq
   abline(h = 0, lty = 2)
 
   plot(
-    x = common_timsecale,
+    x = common_timescale,
     y = xs_normalized$z,
     col = "blue",
     type = "l",
@@ -739,10 +981,10 @@ plot_stacked_result_3D <- function(common_timsecale, xs_normalized, recovered_eq
     #ylim = c(-2.5, 2.5),
     ylab = "(-)",
     xlab = "Time (ky)",
-    xlim = range(common_timsecale),
+    xlim = range(common_timescale),
     main = "Ocean Temperature (Z)"
   )
-  lines(x = common_timsecale,
+  lines(x = common_timescale,
         recovered_data$z,
         col = "orange",
         lty = 2, lwd = 2)
@@ -766,14 +1008,14 @@ plot_stacked_result_3D <- function(common_timsecale, xs_normalized, recovered_eq
   abline(h = 0, lty = 2)
 
   plot(
-    x = common_timsecale,
+    x = common_timescale,
     y = external_forcing,
     col = c("orange"),
     type = "l",
     ylim = c(-2.5, 2.5),
     ylab = "(-)",
     xlab = "Time (ky)",
-    xlim = range(common_timsecale),
+    xlim = range(common_timescale),
     main = " External forcing factor (M)"
   )
 
@@ -791,23 +1033,23 @@ plot_stacked_result_3D <- function(common_timsecale, xs_normalized, recovered_eq
   par(mfrow = c(1, 1))
 }
 
-plot_stacked_result_2D <- function(common_timsecale, xs_normalized, recovered_equations, recovered_data, external_forcing, title = NULL){
+plot_stacked_result_2D <- function(common_timescale, xs_normalized, recovered_equations, recovered_data, external_forcing, title = NULL){
 
   par(mfrow = c(2, 2))
 
   plot(
-    x = common_timsecale,
+    x = common_timescale,
     y = xs_normalized$x,
     type = "l",
     #ylim = range(recovered_data$x),
     ylim = c(-2.5, 2.5),
     ylab = "(-)",
     xlab = "Time (ky)",
-    xlim = range(common_timsecale),
+    xlim = range(common_timescale),
     main = "Ice Extent (X)"
   )
 
-  lines(x = common_timsecale,
+  lines(x = common_timescale,
         recovered_data$x,
         col = "orange",
         lty = 2, lwd = 2)
@@ -831,7 +1073,7 @@ plot_stacked_result_2D <- function(common_timsecale, xs_normalized, recovered_eq
   abline(h = 0, lty = 2)
 
   plot(
-    x = common_timsecale,
+    x = common_timescale,
     y = xs_normalized$y,
     col = "red",
     type = "l",
@@ -839,11 +1081,11 @@ plot_stacked_result_2D <- function(common_timsecale, xs_normalized, recovered_eq
     ylim = c(-2.5, 2.5),
     ylab = "(-)",
     xlab = "Time (ky)",
-    xlim = range(common_timsecale),
+    xlim = range(common_timescale),
     main = "CO2 Concentration (Y)"
   )
 
-  lines(x = common_timsecale,
+  lines(x = common_timescale,
         recovered_data$y,
         col = "orange",
         lty = 2, lwd = 2)
@@ -867,14 +1109,14 @@ plot_stacked_result_2D <- function(common_timsecale, xs_normalized, recovered_eq
   abline(h = 0, lty = 2)
 
   plot(
-    x = common_timsecale,
+    x = common_timescale,
     y = external_forcing,
     col = c("orange"),
     type = "l",
     ylim = c(-2.5, 2.5),
     ylab = "(-)",
     xlab = "Time (ky)",
-    xlim = range(common_timsecale),
+    xlim = range(common_timescale),
     main = " External forcing factor (M)"
   )
 
@@ -919,19 +1161,19 @@ plot_scatter <- function(raw_x, raw_y, smooth_y, timescale, y_label, title = NUL
   invisible(NULL)
 }
 
-plot_milank <- function(common_timsecale, generated_data, external_focring, title = NULL){
+plot_milank <- function(common_timescale, generated_data, external_focring, title = NULL){
 
   par(mfrow = c(2, 2))
 
   plot(
-    x = common_timsecale,
+    x = common_timescale,
     y = generated_data$x,
     type = "l",
     ylim = c(-2.5, 2.5),
     ylab = "(-)",
     xlab = "Time (ky)",
     #xlim = c(11, 400),
-    xlim = rev(range(common_timsecale)),
+    xlim = rev(range(common_timescale)),
     main = "Ice Extent (X)"
   )
 
@@ -947,7 +1189,7 @@ plot_milank <- function(common_timsecale, generated_data, external_focring, titl
   abline(h = 0, lty = 2)
 
   plot(
-    x = common_timsecale,
+    x = common_timescale,
     y = generated_data$y,
     col = "red",
     type = "l",
@@ -955,7 +1197,7 @@ plot_milank <- function(common_timsecale, generated_data, external_focring, titl
     ylab = "(-)",
     xlab = "Time (ky)",
     #xlim = c(11, 400),
-    xlim = rev(range(common_timsecale)),
+    xlim = rev(range(common_timescale)),
     main = "CO2 concentration (Y)"
   )
 
@@ -971,7 +1213,7 @@ plot_milank <- function(common_timsecale, generated_data, external_focring, titl
   abline(h = 0, lty = 2)
 
   plot(
-    x = common_timsecale,
+    x = common_timescale,
     y = generated_data$z,
     col = "blue",
     type = "l",
@@ -979,7 +1221,7 @@ plot_milank <- function(common_timsecale, generated_data, external_focring, titl
     ylab = "(-)",
     xlab = "Time (ky)",
     #xlim = c(11, 400),
-    xlim = rev(range(common_timsecale)),
+    xlim = rev(range(common_timescale)),
     main = "Ocean temp (Z)"
   )
 
@@ -995,7 +1237,7 @@ plot_milank <- function(common_timsecale, generated_data, external_focring, titl
   abline(h = 0, lty = 2)
 
   plot(
-    x = common_timsecale,
+    x = common_timescale,
     y = external_focring,
     col = c("orange"),
     type = "l",
@@ -1003,7 +1245,7 @@ plot_milank <- function(common_timsecale, generated_data, external_focring, titl
     ylab = "(-)",
     xlab = "Time (ky)",
     #xlim = c(11, 400),
-    xlim = rev(range(common_timsecale)),
+    xlim = rev(range(common_timescale)),
     main = " External forcing factor (M)"
   )
 
@@ -1022,19 +1264,21 @@ plot_milank <- function(common_timsecale, generated_data, external_focring, titl
 }
 
 
-#plot_scatter(ice_volume_clean$Age, ice_volume_clean$Ice_Volume, smooth_ice, common_timsecale, "ice_volume", "Raw Ice data vs smoothed curve")
-#plot_scatter(co2_clean$Age, co2_clean$CO2, smooth_co2, common_timsecale, "co2", "Raw co2 data vs smoothed curve")
-#plot_scatter(ocean_temp_clean$Age, ocean_temp_clean$Ocean_Temp, smooth_ocean_temp, common_timsecale, "Ocean Temp", "Raw ocean temp data vs smoothed curve")
-#plot_scatter(GAST_clean$Age, GAST_clean$GAST, smooth_GAST, common_timsecale, "GAST", "Raw GAST data vs smoothed curve")
+#plot_scatter(ice_volume_clean$Age, ice_volume_clean$Ice_Volume, smooth_ice, common_timescale, "ice_volume", "Raw Ice data vs smoothed curve")
+#plot_scatter(co2_clean$Age, co2_clean$CO2, smooth_co2, common_timescale, "co2", "Raw co2 data vs smoothed curve")
+#plot_scatter(ocean_temp_clean$Age, ocean_temp_clean$Ocean_Temp, smooth_ocean_temp, common_timescale, "Ocean Temp", "Raw ocean temp data vs smoothed curve")
+#plot_scatter(GAST_clean$Age, GAST_clean$GAST, smooth_GAST, common_timescale, "GAST", "Raw GAST data vs smoothed curve")
 
 
-#plot_stacked_result_3D(common_timsecale = common_timsecale, xs_normalized = xs_normalized, recovered_data = recovered_3D, recovered_equations = get_equations(), external_forcing = isl_normalized)
+#plot_stacked_result_3D(common_timescale = common_timescale, xs_normalized = xs_normalized, recovered_data = recovered_3D, recovered_equations = get_equations_str(), external_forcing = isl_normalized)
 
-#plot_stacked_result_2D(common_timsecale = common_timsecale, xs_normalized = xs_normalized_2d, recovered_data = df.b, recovered_equations = get_equations(), external_forcing = isl_normalized)
+#plot_stacked_result_2D(common_timescale = common_timescale, xs_normalized = xs_normalized_2d, recovered_data = df.b, recovered_equations = get_equations_str(), external_forcing = isl_normalized)
 
-plot_stacked_result_4D(common_timsecale = common_timsecale, xs_normalized = xs_normalized, recovered_data = recovered_4D, recovered_equations = get_equations(), external_forcing = isl_normalized)
+#plot_stacked_result_4D(common_timescale = common_timescale, xs_normalized = xs_normalized, recovered_data = recovered_4D, recovered_equations = get_equations_str(), external_forcing = isl_normalized)
 
-#plot_milank(common_timsecale = common_timescale, generated_data = xs_normalized, external_focring = isl_normalized)
+plot_stacked_result_5D(common_timescale = common_timescale, xs_normalized = xs_normalized, recovered_data = recovered_5D, recovered_equations = get_equations_str(), external_forcing = isl_normalized)
+
+#plot_milank(common_timescale = common_timescale, generated_data = xs_normalized, external_focring = isl_normalized)
 
 print("i finishied running")
 

@@ -79,12 +79,12 @@ clean_data <- function() {
     comment.char = "#"
   )
 
-  SST_clean <- SST_original[, c("age_kaBP", "SST_anom.M")]
+  SST_clean <- SST_original[, c("age_kaBP", "SST_M")]
   names(SST_clean) <- c("Age", "SST_Temp")
   # the dataset sets 0 as 1850 not 1950
   SST_clean$Age <- SST_clean$Age + 0.1
   SST_clean <- SST_clean[SST_clean$Age >= 0 & SST_clean$Age <= 400, ]
-  #SST_clean <- SST_clean[order(SST_clean$Age, decreasing = TRUE),]
+  SST_clean <- SST_clean[order(SST_clean$Age, decreasing = TRUE),]
 
   deep_ocean_lisick_original <- read.csv(
     "rohling2021-lr-main.txt",
@@ -111,13 +111,27 @@ clean_data <- function() {
   avg_surface_temp_clean <- avg_surface_temp_clean[avg_surface_temp_clean$Age >= 0 & avg_surface_temp_clean$Age <= 400, ]
   avg_surface_temp_clean <- avg_surface_temp_clean[order(avg_surface_temp_clean$Age, decreasing = TRUE),]
 
+  arctic_air_temp_original <- read.csv(
+    "edc3deuttemp2007-noaa.txt",
+    header = TRUE,
+    sep = "\t",
+    comment.char = "#"
+  )
+
+  arctic_air_temp_clean <- arctic_air_temp_original[, c("age_calBP", "Temperature")]
+  names(arctic_air_temp_clean) <- c("Age", "air_temp")
+  arctic_air_temp_clean <- arctic_air_temp_clean[avg_surface_temp_clean$Age >= 0 & avg_surface_temp_clean$Age <= 400, ]
+  arctic_air_temp_clean <- arctic_air_temp_clean[order(arctic_air_temp_clean$Age, decreasing = TRUE),]
+  arctic_air_temp_clean <- na.omit(arctic_air_temp_clean)
+
 
   #return(list(ice_volume_clean, co2_clean, ocean_temp_clean))
   #return(list(ice_volume_clean, co2_clean, mean_ocean_clean))
   #return(list(ice_volume_clean,co2_clean,SST_clean))
   #return(list(ice_volume_clean,co2_clean,deep_ocean_lisick_clean))
   #return(list(ice_volume_clean, co2_clean, ocean_temp_clean,SST_clean))
-  return(list(ice_volume_clean, co2_clean, ocean_temp_clean,avg_surface_temp_clean))
+  #return(list(ice_volume_clean, co2_clean, ocean_temp_clean,avg_surface_temp_clean))
+  return(list(ice_volume_clean, co2_clean, ocean_temp_clean,avg_surface_temp_clean, arctic_air_temp_clean))
 }
 
 datasets <- clean_data()
@@ -127,6 +141,7 @@ co2_clean <- datasets[[2]]
 ocean_temp_clean <- datasets[[3]]
 #SST_clean <- datasets[[4]]
 GAST_clean <- datasets[[4]]
+air_temp_clean <- datasets[[5]]
 
 dt <- 0.01
 
@@ -139,7 +154,7 @@ times <- t_star * 10
 # Here we defien a common_timescale for the datasets
 common_timescale <- seq(400, 11, by = -dt)
 #common_timescale <- seq(11, 400, dt)
-model_time <- seq(from = 0, by = dt, length.out = nrow(xs_normalized))
+model_time <- seq(from = 0, by = dt, length.out = length(common_timescale))
 
 # Create data on the same timescale for Ice extent, Co2 concenntration and deep ocean temp
 
@@ -157,6 +172,9 @@ smooth_ocean_temp <- predict(smooth_ocean_temp_fit, common_timescale)$y
 
 smooth_GAST_fit <- smooth.spline(GAST_clean$Age, GAST_clean$GAST)
 smooth_GAST <- predict(smooth_GAST_fit, common_timescale)$y
+
+smooth_air_temp_fit <- smooth.spline(air_temp_clean$Age, air_temp_clean$air_temp)
+smooth_air_temp <- predict(smooth_air_temp_fit, common_timescale)$y
 
 normalized_min_max <- function(x) {
   (x - min(x)) / (max(x) - min(x))
@@ -208,7 +226,8 @@ xs <- data.frame(
   x = smooth_ice,
   y = smooth_co2,
   z = smooth_ocean_temp,
-  w = smooth_GAST
+  w = smooth_GAST,
+  v = smooth_air_temp
 )
 
 # Get rid of NA values
@@ -250,7 +269,9 @@ generate_system_Milank <- function(t, state, parameters) {
 
 # Inital conditions for dataset data, we use the first row of the datasets
 initial_conditions <- as.numeric(xs_normalized[1,])
-initial_conditions_2D <- initial_conditions_3D[1:2]
+initial_conditions_2D <- initial_conditions[1:2]
+initial_conditions_3D <- initial_conditions[1:3]
+initial_conditions_4D <- initial_conditions[1:4]
 
 # Solve ODEs for each initial condition for the generated data
 # solutions_generated_data <- ode(
@@ -267,10 +288,10 @@ initial_conditions_2D <- initial_conditions_3D[1:2]
 #xs_generated <- data.frame(df$ice, df$co2, df$temp)
 #colnames(xs_generated) <- c("x", "y", "z")
 
-xs_gen_normalized <- as.data.frame(lapply(xs_generated, normalized))
+#xs_gen_normalized <- as.data.frame(lapply(xs_generated, normalized))
 
 xs_plus_forcing <- cbind(xs_normalized,isl_normalized)
-names(xs_plus_forcing) <- c("x", "y", "z", "w","u")
+names(xs_plus_forcing) <- c("x", "y", "z", "w","v","u")
 
 #Theta = features(xs_plus_forcing, polyorder = 2)
 
@@ -285,8 +306,9 @@ names(xs_plus_forcing) <- c("x", "y", "z", "w","u")
 #   print(sindy.obj$B)
 # }
 
-#sindy.obj = sindyc(xs = xs_normalized, u = isl_normalized, dt = dt, lambda = 0.05)
+#sindy.obj = sindyc(xs = xs_normalized, u = isl_normalized, dt = dt, lambda = 0.01)
 #print(sindy.obj$B)
+#print(get_equations(sindy.obj$B))
 
 #test = sindyc(xs = xs_normalized, dt = dt, lambda = 0.0)
 #print(test$B)
