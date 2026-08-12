@@ -404,4 +404,20 @@ def main():
     plt.show()
 
 
-main()
+#main()
+
+with open("181-1123_plank_foram_SST.tab", "r") as f:
+    lines = f.readlines()
+
+header_row = next(i for i, line in enumerate(lines) if line.startswith("Sample label"))
+
+sst = pl.read_csv(
+    "181-1123_plank_foram_SST.tab",
+    separator="\t",
+    skip_rows=header_row
+)
+
+sst_clean = (sst.filter(pl.col("Age [ka BP]").is_between(0, 400)))
+
+print(sst_clean.head())
+print(sst_clean.tail())
