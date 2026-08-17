@@ -137,18 +137,44 @@ clean_data <- function() {
   australia_SST_clean <- australia_SST_clean[order(australia_SST_clean$Age, decreasing = TRUE),]
   australia_SST_clean <- na.omit(australia_SST_clean)
 
+  dust_df1_original <- read.csv(
+    "kawamura2017-df1_dust_count-concentr.txt",
+    header = TRUE,
+    sep = "\t",
+    comment.char = "#"
+  )
+
+  dust_df2_original <- read.csv(
+    "kawamura2017-df2_dust_count-concentr.txt",
+    header = TRUE,
+    sep = "\t",
+    comment.char = "#"
+  )
+
+  dust_transition_age <- (max(dust_df1_original$age_aicc2012))
+  dust_df2_clean <- dust_df2_original[dust_df2_original$age_aicc2012 > dust_transition_age, ]
+  names(dust_df2_clean) <- c(names(dust_df1_original))
+  dust_original <- rbind(dust_df1_original, dust_df2_clean)
+
+  dust_clean <- dust_original[, c("age_aicc2012", "dust_concentration")]
+  names(dust_clean) <- c("Age", "Dust")
+  dust_clean$Age <- dust_clean$Age / 1000
+  dust_clean <- dust_clean[dust_clean$Age >= 0 & dust_clean$Age <= 400, ]
+  dust_clean <- dust_clean[order(dust_clean$Age, decreasing = TRUE),]
+  dust_clean <- na.omit(dust_clean)
+
 
   #return(list(ice_volume_clean, co2_clean, ocean_temp_clean))
   #return(list(ice_volume_clean, co2_clean, mean_ocean_clean))
   #return(list(ice_volume_clean,co2_clean,SST_clean))
   #return(list(ice_volume_clean,co2_clean,deep_ocean_lisick_clean))
   #return(list(ice_volume_clean,co2_clean,deep_ocean_lisick_clean,SST_clean))
-  return(list(ice_volume_clean,co2_clean,ocean_temp_clean,australia_SST_clean))
+  #return(list(ice_volume_clean,co2_clean,ocean_temp_clean,australia_SST_clean))
   #return(list(ice_volume_clean, co2_clean, ocean_temp_clean,SST_clean))
   #return(list(ice_volume_clean, co2_clean, ocean_temp_clean,avg_surface_temp_clean))
   #return(list(ice_volume_clean, co2_clean, ocean_temp_clean,avg_surface_temp_clean, arctic_air_temp_clean))
   #return(list(ice_volume_clean,co2_clean))
-  #return(list(ice_volume_clean, co2_clean, ocean_temp_clean,avg_surface_temp_clean, SST_clean))
+  #return(list(ice_volume_clean, co2_clean, ocean_temp_clean,avg_surface_temp_clean, SST_clean, dust_clean))
 }
 
 datasets <- clean_data()
@@ -156,8 +182,9 @@ datasets <- clean_data()
 ice_volume_clean <- datasets[[1]]
 co2_clean <- datasets[[2]]
 ocean_temp_clean <- datasets[[3]]
-SST_clean <- datasets[[4]]
-#GAST_clean <- datasets[[4]]
+SST_clean <- datasets[[5]]
+GAST_clean <- datasets[[4]]
+dust_clean <- datasets[[6]]
 #air_temp_clean <- datasets[[5]]
 
 dt <- 0.01
@@ -189,6 +216,9 @@ smooth_SST <- predict(smooth_SST_fit, common_timescale)$y
 
 smooth_GAST_fit <- smooth.spline(GAST_clean$Age, GAST_clean$GAST)
 smooth_GAST <- predict(smooth_GAST_fit, common_timescale)$y
+
+smooth_Dust_fit <- smooth.spline(dust_clean$Age, dust_clean$Dust)
+smooth_Dust <- predict(smooth_Dust_fit, common_timescale)$y
 
 #smooth_air_temp_fit <- smooth.spline(air_temp_clean$Age, air_temp_clean$air_temp)
 #smooth_air_temp <- predict(smooth_air_temp_fit, common_timescale)$y
@@ -244,9 +274,10 @@ R_interp <- approxfun(model_time, isl_normalized, rule = 2)
 xs <- data.frame(
   x = smooth_ice,
   y = smooth_co2,
-  z = smooth_ocean_temp
-  #w = smooth_GAST,
-  #w = smooth_SST
+  z = smooth_ocean_temp,
+  w = smooth_GAST,
+  v = smooth_SST,
+  s = smooth_Dust
   #v = smooth_air_temp
 )
 
@@ -308,14 +339,6 @@ initial_conditions <- as.numeric(xs_normalized[1,])
 
 #xs_gen_normalized <- as.data.frame(lapply(xs_generated, normalized))
 
-xs_plus_forcing <- cbind(xs_normalized,isl_normalized)
-#names(xs_plus_forcing) <- c("x", "y", "u")
-names(xs_plus_forcing) <- c("x", "y", "z", "u")
-#names(xs_plus_forcing) <- c("x", "y", "z", "w", "u")
-#names(xs_plus_forcing) <- c("x", "y", "z", "w","v","u")
-
-#Theta = features(xs_plus_forcing, polyorder = 2)
-
 # lambda_values = list(0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07)
 
 # for (lam in lambda_values) {
@@ -327,9 +350,14 @@ names(xs_plus_forcing) <- c("x", "y", "z", "u")
 #   print(get_equations(sindy.obj$B))
 # }
 
-#sindy.obj = sindyc(xs = xs_normalized, u = isl_normalized, dt = dt, lambda = 0.035)
+#sindy.obj = sindyc(xs = xs_normalized, u = isl_normalized, dt = dt, lambda = 0.05)
 #print(sindy.obj$B)
 #print(get_equations(sindy.obj$B))
+
+#sindy.obj = sindy(xs = xs_normalized, dt = dt, lambda = 0.015)
+#print(sindy.obj$B)
+#print(get_equations(sindy.obj$B))
+
 
 #test = sindyc(xs = xs_normalized, dt = dt, lambda = 0.0)
 #print(test$B)
