@@ -4,43 +4,10 @@ library(sindyr)
 
 source("Solving_SINDy.R")
 
-# Define parameters (change these to explore different behavior)
-p <- 1
-q <- 2.5
-r <- 1.3
-s <- 0.6
-v <- 0.2
-u <- 0.5
 
 dt <- 0.01
 common_timescale <- seq(400, 11, by = -dt)
 model_time <- seq(from = 0, by = dt, length.out = length(common_timescale))
-
-# Define the system of ODEs according to barry saltzman equations
-# saltzman_system <- function(t, state, parameters) {
-#   x <- state[1]
-#   y <- state[2]
-#   z <- state[3]
-
-#   dx <- -x - y - v * z
-#   dy <- -p * z + r * y - s * y^2 - y^3
-#   dz <- -q * (x + z)
-
-#   list(c(dx, dy, dz))
-# }
-
-# Solve ODEs for each initial condition
-# saltzman_solutions <- ode(
-#   y = initial_conditions,
-#   times = times,
-#   func = saltzman_system,
-#   parms = NULL,
-#   method = "lsoda"
-# )
-
-# Plot
-#df.a <- data.frame(saltzman_solutions)
-#colnames(df.a) <- c("time", "x", "y", "z")
 
 # Define the system of ODEs for a 3D system
 system_3D <- function(t, state, parameters) {
@@ -103,6 +70,11 @@ system_3D <- function(t, state, parameters) {
   #dy <- 1.3959684*y - 0.9655704*z + 0.1338047*y^2 - 0.5138604*y^3
   #dz <- -2.614082*x - 2.487804*z
 
+  # From generated data (normalized) with Milank forcing (normalized), times = 500 - t_star * 10 and ode generated using t_star, lam = 0.1
+  dx <- -0.969016119490257*x - 0.973881978714652*y - 0.165504828185127*z - 0.664934573666374*u
+  dy <- 1.39597041785315*y - 0.965575638929246*z + 0.133814635018717*y*y - 0.51383943078309*y*y*y
+  dz <- -2.61407299788248*x - 2.48780456411746*z
+
   #---------------------------------------------------#
   # Equations derived from the following datasets     #
   # ice volume: "rohling2021-wh-main.txt",            #
@@ -146,9 +118,9 @@ system_3D <- function(t, state, parameters) {
   #dz <- 0
 
   # Smoothed dataset data, with external forcing, libray = deg 3, lambda = 0.015 (worked for ice and co2 till 300 yr did not capture ocean temp behaviours well)
-  dx <- 0.0330570648119034 - 0.171669187160925*x - 0.136899967272201*y - 0.0703130024846108*u - 0.0758015161361516*x*x - 0.216867018002116*x*y - 0.0540803890292787*x*u - 0.120187131051375*y*y + 0.0354935585914174*y*z - 0.0406019886135376*y*u - 0.0423566318625745*z*u - 0.0541300947364469*u*u + 0.0805932965760258*x*x*x + 0.151715641381458*x*x*y - 0.0180304365525033*x*x*z + 0.040050446030629*x*x*u + 0.142921493244208*x*y*y - 0.0468497643653352*x*y*z - 0.0398092867069298*x*u*u + 0.0588061418723103*y*y*y - 0.0574683500524343*y*y*u + 0.0477881884235092*y*z*u - 0.0172017099106262*y*u*u - 0.0294486752682594*z*u*u - 0.0232098889713173*u*u*u
-  dy <- -0.055519704803538 + 0.033961786833614*x + 0.0230507054512693*y + 0.0478908275500428*u + 0.0459973338113421*x*x + 0.0529031227825043*x*u + 0.0326155345985261*y*u + 0.0314180072035031*z*u + 0.0323721779989*u*u - 0.0447059323694309*x*x*y - 0.0463817577141423*x*x*z - 0.145503378910879*x*y*z - 0.0232007149085399*x*y*u + 0.0709849749807919*x*z*z + 0.0955279443360002*x*z*u + 0.0209174426568376*x*u*u + 0.0252285740982292*y*y*y - 0.0844920195661323*y*y*z + 0.0354888674817895*y*z*z + 0.0373925788208289*z*u*u + 0.0236131093109975*u*u*u
-  dz <- 0.0274658245282547*x + 0.0349795333000159*x*x + 0.0315948102438961*x*y + 0.019172513757698*y*u + 0.0500366200832704*x*y*y - 0.0261951567048739*x*y*z - 0.0155281904519627*x*z*z - 0.0151002405491516*x*z*u + 0.0478886601518981*y*y*y + 0.0205643531103601*y*y*u - 0.0270253822343725*y*z*z - 0.0476306209805224*y*z*u - 0.0185407280108476*z*u*u
+  #dx <- 0.0330570648119034 - 0.171669187160925*x - 0.136899967272201*y - 0.0703130024846108*u - 0.0758015161361516*x*x - 0.216867018002116*x*y - 0.0540803890292787*x*u - 0.120187131051375*y*y + 0.0354935585914174*y*z - 0.0406019886135376*y*u - 0.0423566318625745*z*u - 0.0541300947364469*u*u + 0.0805932965760258*x*x*x + 0.151715641381458*x*x*y - 0.0180304365525033*x*x*z + 0.040050446030629*x*x*u + 0.142921493244208*x*y*y - 0.0468497643653352*x*y*z - 0.0398092867069298*x*u*u + 0.0588061418723103*y*y*y - 0.0574683500524343*y*y*u + 0.0477881884235092*y*z*u - 0.0172017099106262*y*u*u - 0.0294486752682594*z*u*u - 0.0232098889713173*u*u*u
+  #dy <- -0.055519704803538 + 0.033961786833614*x + 0.0230507054512693*y + 0.0478908275500428*u + 0.0459973338113421*x*x + 0.0529031227825043*x*u + 0.0326155345985261*y*u + 0.0314180072035031*z*u + 0.0323721779989*u*u - 0.0447059323694309*x*x*y - 0.0463817577141423*x*x*z - 0.145503378910879*x*y*z - 0.0232007149085399*x*y*u + 0.0709849749807919*x*z*z + 0.0955279443360002*x*z*u + 0.0209174426568376*x*u*u + 0.0252285740982292*y*y*y - 0.0844920195661323*y*y*z + 0.0354888674817895*y*z*z + 0.0373925788208289*z*u*u + 0.0236131093109975*u*u*u
+  #dz <- 0.0274658245282547*x + 0.0349795333000159*x*x + 0.0315948102438961*x*y + 0.019172513757698*y*u + 0.0500366200832704*x*y*y - 0.0261951567048739*x*y*z - 0.0155281904519627*x*z*z - 0.0151002405491516*x*z*u + 0.0478886601518981*y*y*y + 0.0205643531103601*y*y*u - 0.0270253822343725*y*z*z - 0.0476306209805224*y*z*u - 0.0185407280108476*z*u*u
 
   # Smoothed dataset data, with externa forcing, libray = deg 3, lambda = 0.01 (errors out)
   #dx <- 0.03305706 - 0.17166919*x - 0.13689997*y - 0.07031300*u - 0.07580152*x^2 - 0.21686702*x*y - 0.05408039*x*u - 0.12018713*y^2 + 0.03549356*y*z - 0.04060199*y*u - 0.04235663*z*u - 0.05413009*u^2 + 0.08059330*x^3 + 0.15171564*x^2*y - 0.01803044*x^2*z + 0.04005045*x^2*u + 0.14292149*x*y^2 - 0.04684976*x*y*z - 0.03980929*x*u^2 + 0.05880614*y^3 - 0.05746835*y^2*u + 0.04778819*y*z*u - 0.01720171*y*u^2 - 0.02944868*z*u^2 - 0.02320989*u^3
@@ -265,9 +237,9 @@ system_3D <- function(t, state, parameters) {
 
   # z zeros out at lambda = 0.02
 
-  dx <- -0.119445591838993*x - 0.155037683002388*y - 0.0153456023836536*x*x - 0.0404365508259584*x*y - 0.0327869480997936*x*z - 0.0392714653166307*y*z + 0.0357132168980042*x*x*x + 0.0688580779078895*x*x*y - 0.0413047043861709*x*x*z + 0.130436745026789*x*y*y - 0.124273382156312*x*y*z + 0.0840936784737315*y*y*y - 0.0535113868217864*y*y*z + 0.0202841007169509*y*z*z
-  dy <- -0.0399572386233174 + 0.043382549900247*x + 0.068015959760309*y + 0.0757225084568508*x*x + 0.0479386209434652*x*y + 0.025349879140141*y*z - 0.0284692375952173*x*x*y - 0.0163061036193791*x*x*z - 0.0179670858753445*x*y*y - 0.0348181946514444*x*y*z + 0.0431703937113521*x*z*z - 0.0232598339408527*y*y*z
-  dz <- -0.0176398687778484 + 0.0351992828118925*x + 0.0527952393698958*x*x + 0.0306133581542054*x*y + 0.0294319890986913*x*z + 0.0180483155701846*y*z + 0.034739978511223*x*x*y - 0.0557037529223801*x*x*z + 0.0642578997687903*x*y*y - 0.0659880480533362*x*y*z - 0.0167171006942211*x*z*z + 0.0355452954746594*y*y*y - 0.0269427640376328*y*z*z
+  #dx <- -0.119445591838993*x - 0.155037683002388*y - 0.0153456023836536*x*x - 0.0404365508259584*x*y - 0.0327869480997936*x*z - 0.0392714653166307*y*z + 0.0357132168980042*x*x*x + 0.0688580779078895*x*x*y - 0.0413047043861709*x*x*z + 0.130436745026789*x*y*y - 0.124273382156312*x*y*z + 0.0840936784737315*y*y*y - 0.0535113868217864*y*y*z + 0.0202841007169509*y*z*z
+  #dy <- -0.0399572386233174 + 0.043382549900247*x + 0.068015959760309*y + 0.0757225084568508*x*x + 0.0479386209434652*x*y + 0.025349879140141*y*z - 0.0284692375952173*x*x*y - 0.0163061036193791*x*x*z - 0.0179670858753445*x*y*y - 0.0348181946514444*x*y*z + 0.0431703937113521*x*z*z - 0.0232598339408527*y*y*z
+  #dz <- -0.0176398687778484 + 0.0351992828118925*x + 0.0527952393698958*x*x + 0.0306133581542054*x*y + 0.0294319890986913*x*z + 0.0180483155701846*y*z + 0.034739978511223*x*x*y - 0.0557037529223801*x*x*z + 0.0642578997687903*x*y*y - 0.0659880480533362*x*y*z - 0.0167171006942211*x*z*z + 0.0355452954746594*y*y*y - 0.0269427640376328*y*z*z
 
   list(c(dx, dy, dz))
 }
@@ -546,6 +518,7 @@ system_5D <- function(t, state, parameters) {
   # ice volume: "rohling2021-wh-main.txt",            #
   # co2: "antarctica2015co2.xls" and                  #
   # deep ocean temp: "sosdian2009.xls"                #
+  # GAST: "41586_2016_BFnature19798_MOESM258_ESM.xlsx"#
   # SST: "herbert2016-odp982.txt"                     #
   #---------------------------------------------------#
 
@@ -780,16 +753,16 @@ choose_solution <- function(xs_normalized, model_time, dt = 0.01, parms = parmet
 #   maxsteps = 50000
 # )
 
-# solutions_3D <- ode(
-#   y = initial_conditions,
-#   # use t_star for generated data
-#   #times = t_star,
-#   times = model_time,
-#   func = system_3D,
-#   parms = parms,
-#   method = "lsoda",
-#   maxsteps = 50000
-# )
+solutions_3D <- ode(
+  y = as.numeric(xs_gen_normalized[1, ]),
+  # use t_star for generated data
+  times = t_star,
+  #times = model_time,
+  func = system_3D,
+  parms = parmeters,
+  method = "lsoda",
+  maxsteps = 50000
+)
 
 # solutions_4D <- ode(
 #   y = initial_conditions,
@@ -813,82 +786,82 @@ choose_solution <- function(xs_normalized, model_time, dt = 0.01, parms = parmet
 #   maxsteps = 50000
 # )
 
-solutions_reseting <- function(xs_normalized, model_time, dt, func, parms, method = "lsoda"){
-  results <- NULL
+# solutions_reseting <- function(xs_normalized, model_time, dt, func, parms, method = "lsoda"){
+#   results <- NULL
 
-  for (start_t in seq(0, max(model_time) - 100, by = 100)) {
+#   for (start_t in seq(0, max(model_time) - 100, by = 100)) {
 
-    # convert the age to an index for common_timescale
-    i <- start_t / dt + 1
+#     # convert the age to an index for common_timescale
+#     i <- start_t / dt + 1
 
-    state <- c(
-      x = xs_normalized$x[i],
-      y = xs_normalized$y[i],
-      z = xs_normalized$z[i]
-    )
+#     state <- c(
+#       x = xs_normalized$x[i],
+#       y = xs_normalized$y[i],
+#       z = xs_normalized$z[i]
+#     )
 
-    time <- seq(start_t, start_t + 100, by = dt)
+#     time <- seq(start_t, start_t + 100, by = dt)
 
-    chunk <- ode(
-      y = state,
-      times = time,
-      func = func,
-      parms = parms,
-      method = "lsoda",
-      maxsteps = 50000
-    )
+#     chunk <- ode(
+#       y = state,
+#       times = time,
+#       func = func,
+#       parms = parms,
+#       method = "lsoda",
+#       maxsteps = 50000
+#     )
 
-    if (!is.null(results)) {
-      chunk <- chunk[-1, ]
-    }
+#     if (!is.null(results)) {
+#       chunk <- chunk[-1, ]
+#     }
 
-    results <- rbind(results, chunk)
+#     results <- rbind(results, chunk)
 
-  }
+#   }
 
-  return(results)
-}
+#   return(results)
+# }
 
-recovered <- switch(
-  as.character(ncol(xs_normalized)),
+# recovered <- switch(
+#   as.character(ncol(xs_normalized)),
 
-  "2" = {
-    recovered <- data.frame(choose_solution(xs_normalized = xs_normalized, model_time = model_time))
-    colnames(recovered) <- c("time", "x", "y")
-    recovered
-  },
+#   "2" = {
+#     recovered <- data.frame(choose_solution(xs_normalized = xs_normalized, model_time = model_time))
+#     colnames(recovered) <- c("time", "x", "y")
+#     recovered
+#   },
 
-  "3" = {
-    recovered <- data.frame(choose_solution(xs_normalized = xs_normalized, model_time = model_time))
-    colnames(recovered) <- c("time", "x", "y", "z")
-    recovered
-  },
+#   "3" = {
+#     recovered <- data.frame(choose_solution(xs_normalized = xs_normalized, model_time = model_time))
+#     colnames(recovered) <- c("time", "x", "y", "z")
+#     recovered
+#   },
 
-  "4" = {
-    recovered <- data.frame(choose_solution(xs_normalized = xs_normalized, model_time = model_time))
-    colnames(recovered) <- c("time", "x", "y", "z", "w")
-    recovered
-  },
+#   "4" = {
+#     recovered <- data.frame(choose_solution(xs_normalized = xs_normalized, model_time = model_time))
+#     colnames(recovered) <- c("time", "x", "y", "z", "w")
+#     recovered
+#   },
 
-  "5" = {
-    recovered <- data.frame(choose_solution(xs_normalized = xs_normalized, model_time = model_time))
-    colnames(recovered) <- c("time", "x", "y","z", "w", "v")
-    recovered
-  },
+#   "5" = {
+#     recovered <- data.frame(choose_solution(xs_normalized = xs_normalized, model_time = model_time))
+#     colnames(recovered) <- c("time", "x", "y","z", "w", "v")
+#     recovered
+#   },
 
-  "6" = {
-    recovered <- data.frame(choose_solution(xs_normalized = xs_normalized, model_time = model_time))
-    colnames(recovered) <- c("time", "x", "y","z", "w", "v", "s")
-    recovered
-  }
-)
+#   "6" = {
+#     recovered <- data.frame(choose_solution(xs_normalized = xs_normalized, model_time = model_time))
+#     colnames(recovered) <- c("time", "x", "y","z", "w", "v", "s")
+#     recovered
+#   }
+# )
 
 # Solve system using recovered ODEs
 #recovered_2D <- data.frame(solutions_2D)
 #colnames(recovered_2D) <- c("time", "x", "y")
 
-#recovered_3D <-data.frame(solutions_3D)
-#colnames(recovered_3D) <- c("time", "x", "y", "z")
+recovered <-data.frame(solutions_3D)
+colnames(recovered) <- c("time", "x", "y", "z")
 
 #recovered_3D <- data.frame(solutions_reseting(xs_normalized = xs_normalized, model_time = model_time, dt = dt, func = system_3D_thatworks, parms = parms))
 #colnames(recovered_3D) <- c("time", "x", "y", "z")
@@ -1939,6 +1912,7 @@ plot_milank <- function(common_timescale, generated_data, external_focring, titl
 #isl_normalized_test <- isl_normalized[1:30001, ]
 
 #plot_stacked_result_3D(common_timescale = common_timescale, xs_normalized = xs_normalized, recovered_data = recovered, recovered_equations = get_equations_str(), external_forcing = isl_normalized)
+#plot_stacked_result_3D(common_timescale = times, xs_normalized = xs_gen_normalized, recovered_data = recovered, recovered_equations = get_equations_str(), external_forcing = isl_normalized)
 
 #plot_stacked_result_2D(common_timescale = common_timescale, xs_normalized = xs_normalized, recovered_data = recovered_2D, recovered_equations = get_equations_str(), external_forcing = isl_normalized)
 
@@ -1946,7 +1920,7 @@ plot_milank <- function(common_timescale, generated_data, external_focring, titl
 
 #plot_stacked_result_5D(common_timescale = common_timescale, xs_normalized = xs_normalized, recovered_data = recovered_5D, recovered_equations = get_equations_str(), external_forcing = isl_normalized)
 
-plot_stacked_result_6D(common_timescale = common_timescale, xs_normalized = xs_normalized, recovered_data = recovered_5D, recovered_equations = get_equations_str(), external_forcing = isl_normalized)
+#plot_stacked_result_6D(common_timescale = common_timescale, xs_normalized = xs_normalized, recovered_data = recovered_5D, recovered_equations = get_equations_str(), external_forcing = isl_normalized)
 
 #plot_milank(common_timescale = common_timescale, generated_data = xs_normalized, external_focring = isl_normalized)
 
